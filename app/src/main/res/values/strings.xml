@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Job_portal</string>
+    <string name="title_activity_sign_up">SignUpActivity</string>
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="title_activity_registration">RegistrationActivity</string>
+    <string name="title_activity_dashboard">DashboardActivity</string>
+    <string name="title_activity_forger_password">ForgerPasswordActivity</string>
+</resources>
