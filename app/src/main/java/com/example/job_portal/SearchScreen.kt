@@ -1,14 +1,72 @@
 package com.example.job_portal
 
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.job_portal.repository.JobRepoImpl
 import com.example.job_portal.ui.theme.CoffeeBrown
+import com.example.job_portal.ui.theme.SoftCream
+import com.example.job_portal.ui.theme.White
+import com.example.job_portal.viewmodel.JobViewModel
 
 @Composable
 fun SearchScreen() {
-    Text("Search: Find your opportunity", modifier = Modifier.fillMaxSize().padding(16.dp), color = CoffeeBrown)
+    val repo = remember { JobRepoImpl() }
+    val jobViewModel = remember { JobViewModel(repo) }
+    val jobsFromDb by jobViewModel.allJobs.observeAsState(initial = emptyList())
+
+    var searchQuery by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        jobViewModel.fetchAllJobs()
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(SoftCream)
+            .padding(16.dp)
+    ) {
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { searchQuery = it },
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text("Search for your dream job...") },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = CoffeeBrown) },
+            shape = RoundedCornerShape(12.dp),
+            colors = TextFieldDefaults.colors(
+                unfocusedContainerColor = White,
+                focusedContainerColor = White,
+                focusedIndicatorColor = CoffeeBrown,
+                unfocusedIndicatorColor = Color.Transparent
+            )
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            val filteredJobs = jobsFromDb?.filter {
+                it.title.contains(searchQuery, ignoreCase = true) ||
+                        it.company.contains(searchQuery, ignoreCase = true)
+            } ?: emptyList()
+
+            items(filteredJobs) { job ->
+                JobItemCard(job) // Using the same card design
+            }
+        }
+    }
 }

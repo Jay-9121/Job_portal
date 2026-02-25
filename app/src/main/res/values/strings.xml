@@ -5,4 +5,6 @@
     <string name="title_activity_registration">RegistrationActivity</string>
     <string name="title_activity_dashboard">DashboardActivity</string>
     <string name="title_activity_forger_password">ForgerPasswordActivity</string>
+    <string name="title_activity_add_job">AddJobActivity</string>
+    <string name="title_activity_user_dashboard">UserDashboardActivity</string>
 </resources>
