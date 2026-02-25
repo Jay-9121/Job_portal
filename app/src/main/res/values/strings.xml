@@ -7,4 +7,5 @@
     <string name="title_activity_forger_password">ForgerPasswordActivity</string>
     <string name="title_activity_add_job">AddJobActivity</string>
     <string name="title_activity_user_dashboard">UserDashboardActivity</string>
+    <string name="title_activity_edit_job">EditJobActivity</string>
 </resources>

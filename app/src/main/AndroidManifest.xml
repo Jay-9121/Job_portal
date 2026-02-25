@@ -16,6 +16,17 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Job_portal">
         <activity
+            android:name=".EditJobActivity"
+            android:exported="true"
+            android:label="@string/title_activity_edit_job"
+            android:theme="@style/Theme.Job_portal">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".UserDashboardActivity"
             android:exported="true"
             android:label="@string/title_activity_user_dashboard"
