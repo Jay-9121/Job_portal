@@ -18,26 +18,26 @@ import com.example.job_portal.ui.theme.CoffeeBrown
 import com.example.job_portal.ui.theme.SoftCream
 import com.example.job_portal.ui.theme.White
 import com.example.job_portal.viewmodel.JobViewModel
+import com.example.job_portal.viewmodel.UserViewModel // Added import
 import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchScreen(jobViewModel: JobViewModel) {
-    // 1. Get current userId to handle saving persistence
+fun SearchScreen(jobViewModel: JobViewModel, userViewModel: UserViewModel) { // Added UserViewModel
     val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
-    // Observe the live data from the shared ViewModel
+    // Observe Job data and User profile data
     val jobsFromDb by jobViewModel.allJobs.observeAsState(initial = emptyList())
+    val userData by userViewModel.users.observeAsState() // Observe user data here
 
     var searchQuery by remember { mutableStateOf("") }
 
-    // Fetch all necessary data when screen launches
     LaunchedEffect(Unit) {
         jobViewModel.fetchAllJobs()
-        // Critical: fetch applications so we know which buttons to disable
         jobViewModel.fetchUserApplications()
         if (userId.isNotEmpty()) {
             jobViewModel.fetchSavedJobs(userId)
+            userViewModel.getUserById(userId) // Fetch the actual user profile
         }
     }
 
@@ -47,7 +47,6 @@ fun SearchScreen(jobViewModel: JobViewModel) {
             .background(SoftCream)
             .padding(16.dp)
     ) {
-        // Search Input Field
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
@@ -67,7 +66,6 @@ fun SearchScreen(jobViewModel: JobViewModel) {
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Results List
         val filteredJobs = jobsFromDb.filter {
             it.title.contains(searchQuery, ignoreCase = true) ||
                     it.company.contains(searchQuery, ignoreCase = true)
@@ -87,12 +85,12 @@ fun SearchScreen(jobViewModel: JobViewModel) {
             contentPadding = PaddingValues(bottom = 16.dp)
         ) {
             items(filteredJobs, key = { it.jobId }) { job ->
-                // This JobItemCard is the same one used in HomeScreen
-                // It now contains the "Applied" check logic internally
+                // FIXED: Now passing all 4 required arguments
                 JobItemCard(
                     job = job,
                     viewModel = jobViewModel,
-                    userId = userId
+                    userId = userId,
+                    userData = userData // Pass the observed user data
                 )
             }
         }

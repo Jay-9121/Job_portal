@@ -16,9 +16,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import com.example.job_portal.repository.JobRepoImpl
+import com.example.job_portal.repository.UserRepoImpl
 import com.example.job_portal.ui.theme.CoffeeBrown
 import com.example.job_portal.ui.theme.White
 import com.example.job_portal.viewmodel.JobViewModel
+import com.example.job_portal.viewmodel.UserViewModel
 
 class UserDashboardActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,13 +35,17 @@ class UserDashboardActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserDashboardScreen() {
-    val repo = remember { JobRepoImpl() }
-    val jobViewModel: JobViewModel = remember { JobViewModel(repo) }
+    // 1. Initialize both Repositories and ViewModels
+    val jobRepo = remember { JobRepoImpl() }
+    val jobViewModel: JobViewModel = remember { JobViewModel(jobRepo) }
+
+    val userRepo = remember { UserRepoImpl() }
+    val userViewModel: UserViewModel = remember { UserViewModel(userRepo) }
 
     // Navigation State
     var selectedIndex by remember { mutableIntStateOf(0) }
 
-    // Fetch user applications immediately so we know what is already "Applied"
+    // Fetch initial data
     LaunchedEffect(Unit) {
         jobViewModel.fetchUserApplications()
     }
@@ -57,6 +63,7 @@ fun UserDashboardScreen() {
                 title = {
                     Text(
                         text = when(selectedIndex) {
+                            3 -> "My Profile"
                             4 -> "Saved Jobs"
                             5 -> "Applied History"
                             else -> "Job Portal"
@@ -89,17 +96,24 @@ fun UserDashboardScreen() {
     ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             when (selectedIndex) {
-                0 -> HomeScreen(jobViewModel)
-                1 -> SearchScreen(jobViewModel)
+                // FIXED: Now passing userViewModel to all screens that require it for JobItemCard
+                0 -> HomeScreen(jobViewModel, userViewModel)
+                1 -> SearchScreen(jobViewModel, userViewModel)
+
                 2 -> SettingScreen(
                     viewModel = jobViewModel,
                     onSavedJobsClick = { selectedIndex = 4 },
                     onHistoryClick = { selectedIndex = 5 }
                 )
-                3 -> ProfileScreen()
-                4 -> SavedJobsScreen(jobViewModel)
+
+                3 -> ProfileScreen(userViewModel)
+
+                // FIXED: SavedJobsScreen also needs userViewModel to render the JobItemCard
+                4 -> SavedJobsScreen(jobViewModel, userViewModel)
+
                 5 -> AppliedHistoryScreen(jobViewModel)
-                else -> HomeScreen(jobViewModel)
+
+                else -> HomeScreen(jobViewModel, userViewModel)
             }
         }
     }

@@ -16,16 +16,16 @@ import androidx.compose.ui.unit.sp
 import com.example.job_portal.ui.theme.CoffeeBrown
 import com.example.job_portal.ui.theme.SoftCream
 import com.example.job_portal.viewmodel.JobViewModel
+import com.example.job_portal.viewmodel.UserViewModel
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
-fun SavedJobsScreen(viewModel: JobViewModel) {
-    // 1. Get all jobs and the list of saved IDs
-    val allJobs by viewModel.allJobs.observeAsState(initial = emptyList())
-    val savedIds = viewModel.savedJobIds
+fun SavedJobsScreen(jobViewModel: JobViewModel, userViewModel: UserViewModel) {
+    val allJobs by jobViewModel.allJobs.observeAsState(initial = emptyList())
+    val userData by userViewModel.users.observeAsState()
+    val savedIds = jobViewModel.savedJobIds
     val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
-    // 2. Filter the jobs to only show the ones whose ID is in the savedIds list
     val savedJobsList = allJobs.filter { job -> savedIds.contains(job.jobId) }
 
     Column(
@@ -34,31 +34,11 @@ fun SavedJobsScreen(viewModel: JobViewModel) {
             .background(SoftCream)
             .padding(16.dp)
     ) {
-        Text(
-            text = "Your Saved Jobs",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = CoffeeBrown,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+        Text("Your Saved Jobs", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = CoffeeBrown)
 
         if (savedJobsList.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = "No saved jobs yet!",
-                        color = Color.Gray,
-                        fontSize = 16.sp
-                    )
-                    Text(
-                        text = "Jobs you save will appear here.",
-                        color = Color.LightGray,
-                        fontSize = 14.sp
-                    )
-                }
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("No saved jobs yet!", color = Color.Gray)
             }
         } else {
             LazyColumn(
@@ -67,8 +47,13 @@ fun SavedJobsScreen(viewModel: JobViewModel) {
                 contentPadding = PaddingValues(bottom = 16.dp)
             ) {
                 items(savedJobsList) { job ->
-                    // 3. Pass the userId here to match the new JobItemCard signature
-                    JobItemCard(job = job, viewModel = viewModel, userId = userId)
+                    // FIXED: Now passing all 4 required arguments
+                    JobItemCard(
+                        job = job,
+                        viewModel = jobViewModel,
+                        userId = userId,
+                        userData = userData
+                    )
                 }
             }
         }

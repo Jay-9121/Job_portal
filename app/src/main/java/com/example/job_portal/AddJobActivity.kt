@@ -34,15 +34,15 @@ class AddJobActivity : ComponentActivity() {
 
 @Composable
 fun AddJobBody() {
-    // Initialize ViewModel with the Implementation class
     val jobViewModel = remember { JobViewModel(JobRepoImpl()) }
 
-    // States for form fields
     var title by remember { mutableStateOf("") }
     var company by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
     var salary by remember { mutableStateOf("") }
     var type by remember { mutableStateOf("") }
+    // --- NEW FIELD ---
+    var requirements by remember { mutableStateOf("") }
 
     val context = LocalContext.current
 
@@ -68,16 +68,32 @@ fun AddJobBody() {
                 CustomTextField(value = salary, label = "Salary (e.g. $50k - $70k)") { salary = it }
                 CustomTextField(value = type, label = "Job Type (Full-time/Part-time)") { type = it }
 
+                // --- ADDED REQUIREMENTS TEXT FIELD ---
+                CustomTextField(
+                    value = requirements,
+                    label = "Job Requirements (Skills, Experience, etc.)",
+                    isSingleLine = false // Allow multiple lines for requirements
+                ) { requirements = it }
+
                 Spacer(modifier = Modifier.height(20.dp))
 
                 Button(
                     onClick = {
-                        if (title.isEmpty() || company.isEmpty()) {
-                            Toast.makeText(context, "Please fill required fields", Toast.LENGTH_SHORT).show()
+                        if (title.isEmpty() || company.isEmpty() || requirements.isEmpty()) {
+                            Toast.makeText(context, "Please fill all required fields", Toast.LENGTH_SHORT).show()
                             return@Button
                         }
 
-                        val model = JobModel("", title, company, location, salary, type)
+                        // --- UPDATED MODEL CALL ---
+                        val model = JobModel(
+                            jobId = "",
+                            title = title,
+                            company = company,
+                            location = location,
+                            salary = salary,
+                            type = type,
+                            requirements = requirements // Passing the requirements
+                        )
 
                         jobViewModel.addJob(model) { success, message ->
                             Toast.makeText(context, message, Toast.LENGTH_LONG).show()
@@ -98,13 +114,20 @@ fun AddJobBody() {
 }
 
 @Composable
-fun CustomTextField(value: String, label: String, onValueChange: (String) -> Unit) {
+fun CustomTextField(
+    value: String,
+    label: String,
+    isSingleLine: Boolean = true, // Added flexibility
+    onValueChange: (String) -> Unit
+) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         label = { Text(label) },
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
+        singleLine = isSingleLine,
+        minLines = if (isSingleLine) 1 else 3, // Requirements look better with more space
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = CoffeeBrown,
             unfocusedContainerColor = White,

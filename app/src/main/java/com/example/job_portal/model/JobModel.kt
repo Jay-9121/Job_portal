@@ -9,8 +9,12 @@ data class JobModel(
     var company: String = "",
     var location: String = "",
     var salary: String = "",
-    var type: String = ""
+    var type: String = "",
+    var requirements: String = "" // Added requirements field
 ) {
+    /**
+     * Converts the model into a Map for Firebase Database operations.
+     */
     fun toMap(): Map<String, Any?> {
         return mapOf(
             "jobId" to jobId,
@@ -18,8 +22,8 @@ data class JobModel(
             "company" to company,
             "location" to location,
             "salary" to salary,
-            "type" to type
+            "type" to type,
+            "requirements" to requirements // Included in the map
         )
     }
 }
-

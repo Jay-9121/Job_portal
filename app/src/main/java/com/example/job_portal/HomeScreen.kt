@@ -18,23 +18,26 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.job_portal.model.JobModel
+import com.example.job_portal.model.UserModel
 import com.example.job_portal.ui.theme.CoffeeBrown
 import com.example.job_portal.ui.theme.SoftCream
 import com.example.job_portal.ui.theme.White
 import com.example.job_portal.viewmodel.JobViewModel
+import com.example.job_portal.viewmodel.UserViewModel
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
-fun HomeScreen(jobViewModel: JobViewModel) {
+fun HomeScreen(jobViewModel: JobViewModel, userViewModel: UserViewModel) {
     val jobsFromDb by jobViewModel.allJobs.observeAsState(initial = emptyList())
+    val userData by userViewModel.users.observeAsState() // Observe user profile
     val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
     LaunchedEffect(Unit) {
         jobViewModel.fetchAllJobs()
-        // Ensure we have the latest application list to check "Applied" status
         jobViewModel.fetchUserApplications()
         if (userId.isNotEmpty()) {
             jobViewModel.fetchSavedJobs(userId)
+            userViewModel.getUserById(userId) // Fetch profile data for auto-fill
         }
     }
 
@@ -53,10 +56,7 @@ fun HomeScreen(jobViewModel: JobViewModel) {
         )
 
         if (jobsFromDb.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = CoffeeBrown)
             }
         } else {
@@ -66,7 +66,7 @@ fun HomeScreen(jobViewModel: JobViewModel) {
                 contentPadding = PaddingValues(bottom = 16.dp)
             ) {
                 items(jobsFromDb) { job ->
-                    JobItemCard(job, jobViewModel, userId)
+                    JobItemCard(job, jobViewModel, userId, userData)
                 }
             }
         }
@@ -74,41 +74,58 @@ fun HomeScreen(jobViewModel: JobViewModel) {
 }
 
 @Composable
-fun JobItemCard(job: JobModel, viewModel: JobViewModel, userId: String) {
+fun JobItemCard(
+    job: JobModel,
+    viewModel: JobViewModel,
+    userId: String,
+    userData: UserModel?
+) {
     val isSaved = viewModel.isJobSaved(job)
     val context = LocalContext.current
-
-    // --- CHECK IF ALREADY APPLIED ---
-    // This logic looks at your local list of applications fetched in the ViewModel
     val hasApplied = remember(viewModel.userApplications, job.jobId) {
         viewModel.userApplications.any { it.jobId == job.jobId }
     }
 
-    // States for the Application Dialog
     var showDialog by remember { mutableStateOf(false) }
-    var userEmail by remember { mutableStateOf(FirebaseAuth.getInstance().currentUser?.email ?: "") }
+
+    // Auto-fill states based on user profile
+    var userEmail by remember(userData) { mutableStateOf(userData?.email ?: "") }
     var cvDescription by remember { mutableStateOf("") }
 
-    // --- APPLICATION DIALOG ---
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
             title = { Text("Apply for ${job.title}", fontWeight = FontWeight.Bold, color = CoffeeBrown) },
             text = {
                 Column {
+                    // Display User Identity
+                    Text(
+                        text = "Applying as: ${userData?.firstName ?: ""} ${userData?.lastName ?: ""}".trim().ifEmpty { userEmail },
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.Gray
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
                     OutlinedTextField(
                         value = userEmail,
                         onValueChange = { userEmail = it },
                         label = { Text("Email Address") },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp)
                     )
+
                     Spacer(modifier = Modifier.height(8.dp))
+
                     OutlinedTextField(
                         value = cvDescription,
                         onValueChange = { cvDescription = it },
-                        label = { Text("Why are you a good fit? (CV Summary)") },
+                        label = { Text("CV Summary / Why you?") },
+                        placeholder = { Text("Tell the recruiter about your experience...") },
                         modifier = Modifier.fillMaxWidth(),
-                        minLines = 3
+                        minLines = 4,
+                        shape = RoundedCornerShape(8.dp)
                     )
                 }
             },
@@ -121,12 +138,12 @@ fun JobItemCard(job: JobModel, viewModel: JobViewModel, userId: String) {
                             showDialog = false
                             cvDescription = ""
                         } else {
-                            Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Please complete the form", Toast.LENGTH_SHORT).show()
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = CoffeeBrown)
                 ) {
-                    Text("Submit")
+                    Text("Submit Application")
                 }
             },
             dismissButton = {
@@ -154,11 +171,8 @@ fun JobItemCard(job: JobModel, viewModel: JobViewModel, userId: String) {
 
                 IconButton(
                     onClick = {
-                        if (userId.isNotEmpty()) {
-                            viewModel.toggleSaveJob(userId, job)
-                        } else {
-                            Toast.makeText(context, "Please log in to save jobs", Toast.LENGTH_SHORT).show()
-                        }
+                        if (userId.isNotEmpty()) viewModel.toggleSaveJob(userId, job)
+                        else Toast.makeText(context, "Please log in", Toast.LENGTH_SHORT).show()
                     },
                     modifier = Modifier.size(32.dp)
                 ) {
@@ -181,18 +195,32 @@ fun JobItemCard(job: JobModel, viewModel: JobViewModel, userId: String) {
             HomeJobDetailRow(label = "Salary", value = job.salary)
             HomeJobDetailRow(label = "Job Type", value = job.type)
 
+            // Requirements Section
+            if (job.requirements.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "Requirements:",
+                    fontWeight = FontWeight.Bold,
+                    color = CoffeeBrown,
+                    fontSize = 14.sp
+                )
+                Text(
+                    text = job.requirements,
+                    color = Color.DarkGray,
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp
+                )
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- THE DYNAMIC BUTTON ---
             Button(
                 onClick = { if (!hasApplied) showDialog = true },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
-                enabled = !hasApplied, // Disables clicking if already applied
+                modifier = Modifier.fillMaxWidth().height(48.dp),
+                enabled = !hasApplied,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (hasApplied) Color.Gray else CoffeeBrown,
-                    disabledContainerColor = Color.LightGray // Style for "Applied" state
+                    disabledContainerColor = Color.LightGray
                 ),
                 shape = RoundedCornerShape(10.dp)
             ) {

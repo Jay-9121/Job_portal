@@ -132,7 +132,8 @@ fun AdminDashboardScreen(jobViewModel: JobViewModel, onAddClick: () -> Unit) {
             } else {
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     items(jobsFromDb) { job ->
-                        JobItemCard(
+                        // FIXED: Using AdminJobItemCard
+                        AdminJobItemCard(
                             job = job,
                             onDelete = { jobId ->
                                 jobViewModel.deleteJob(jobId) { success, message ->
@@ -147,6 +148,7 @@ fun AdminDashboardScreen(jobViewModel: JobViewModel, onAddClick: () -> Unit) {
                                     putExtra("location", selectedJob.location)
                                     putExtra("salary", selectedJob.salary)
                                     putExtra("type", selectedJob.type)
+                                    putExtra("requirements", selectedJob.requirements)
                                 }
                                 context.startActivity(intent)
                             }
@@ -161,11 +163,9 @@ fun AdminDashboardScreen(jobViewModel: JobViewModel, onAddClick: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminApplicationsList(viewModel: JobViewModel) {
-    // --- FILTER LOGIC ---
     val filterOptions = listOf("All", "Pending", "Accepted", "Declined")
     var selectedFilter by remember { mutableStateOf("All") }
 
-    // Using derivedStateOf to filter the list efficiently
     val filteredApps by remember(selectedFilter, viewModel.allApplications) {
         derivedStateOf {
             val list = viewModel.allApplications.reversed()
@@ -181,7 +181,6 @@ fun AdminApplicationsList(viewModel: JobViewModel) {
     Column(modifier = Modifier.fillMaxSize().background(SoftCream).padding(16.dp)) {
         Text("Incoming Applications", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = CoffeeBrown)
 
-        // --- FILTER CHIPS ---
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -229,7 +228,6 @@ fun AdminAppCard(app: ApplicationModel, viewModel: JobViewModel) {
     val isPending = currentStatus == "Pending"
     var showFullCv by remember { mutableStateOf(false) }
 
-    // --- FULL CV PREVIEW DIALOG ---
     if (showFullCv) {
         AlertDialog(
             onDismissRequest = { showFullCv = false },
@@ -275,7 +273,6 @@ fun AdminAppCard(app: ApplicationModel, viewModel: JobViewModel) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // --- CLICKABLE CV SECTION ---
             Surface(
                 onClick = { showFullCv = true },
                 color = SoftCream.copy(alpha = 0.5f),
@@ -330,8 +327,9 @@ fun AdminAppCard(app: ApplicationModel, viewModel: JobViewModel) {
     }
 }
 
+// RENAMED to AdminJobItemCard to avoid conflict with User side
 @Composable
-fun JobItemCard(job: JobModel, onDelete: (String) -> Unit, onEdit: (JobModel) -> Unit) {
+fun AdminJobItemCard(job: JobModel, onDelete: (String) -> Unit, onEdit: (JobModel) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -356,6 +354,21 @@ fun JobItemCard(job: JobModel, onDelete: (String) -> Unit, onEdit: (JobModel) ->
             Spacer(modifier = Modifier.height(8.dp))
             AdminJobDetailRow("Location", job.location)
             AdminJobDetailRow("Salary", job.salary)
+            AdminJobDetailRow("Type", job.type)
+
+            if (job.requirements.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Requirements:", fontWeight = FontWeight.Bold, color = CoffeeBrown, fontSize = 14.sp)
+                Text(
+                    text = job.requirements,
+                    color = Color.DarkGray,
+                    fontSize = 13.sp,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         }
     }
 }
