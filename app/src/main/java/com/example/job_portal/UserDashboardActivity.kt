@@ -3,12 +3,10 @@ package com.example.job_portal
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge // Import this
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -17,13 +15,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import com.example.job_portal.repository.JobRepoImpl
 import com.example.job_portal.ui.theme.CoffeeBrown
 import com.example.job_portal.ui.theme.White
+import com.example.job_portal.viewmodel.JobViewModel
 
 class UserDashboardActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // 1. This ensures status bar (battery/time) is visible and styled
         enableEdgeToEdge()
         setContent {
             UserDashboardScreen()
@@ -34,7 +33,12 @@ class UserDashboardActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserDashboardScreen() {
-    var selectedIndex by remember { mutableStateOf(0) }
+    // Shared ViewModel Instance initialized with the Repository
+    val repo = remember { JobRepoImpl() }
+    val jobViewModel: JobViewModel = remember { JobViewModel(repo) }
+
+    // State for navigation (Index 4 is used for the Saved Jobs screen)
+    var selectedIndex by remember { mutableIntStateOf(0) }
 
     val navItems = listOf(
         NavItem("Home", Icons.Default.Home),
@@ -44,12 +48,14 @@ fun UserDashboardScreen() {
     )
 
     Scaffold(
-        // 2. Added TopAppBar for the Title
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "Job Portal",
+                        text = when(selectedIndex) {
+                            4 -> "Saved Jobs"
+                            else -> "Job Portal"
+                        },
                         fontWeight = FontWeight.Bold,
                         color = CoffeeBrown
                     )
@@ -64,6 +70,7 @@ fun UserDashboardScreen() {
                 containerColor = White,
                 contentColor = CoffeeBrown
             ) {
+                // We only show the first 4 items in the BottomNav
                 navItems.forEachIndexed { index, item ->
                     NavigationBarItem(
                         selected = selectedIndex == index,
@@ -81,22 +88,24 @@ fun UserDashboardScreen() {
             }
         }
     ) { paddingValues ->
-        // 3. paddingValues ensures content starts below TopBar and stays above BottomBar
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
             when (selectedIndex) {
-                0 -> HomeScreen()
-                1 -> SearchScreen()
-                2 -> SettingScreen()
+                // FIXED: Passing jobViewModel to HomeScreen and SearchScreen
+                0 -> HomeScreen(jobViewModel)
+                1 -> SearchScreen(jobViewModel)
+                2 -> SettingScreen(
+                    onSavedJobsClick = { selectedIndex = 4 }
+                )
                 3 -> ProfileScreen()
-                else -> HomeScreen()
+                4 -> SavedJobsScreen(jobViewModel)
+                else -> HomeScreen(jobViewModel)
             }
         }
     }
 }
 
 data class NavItem(val label: String, val icon: ImageVector)
-

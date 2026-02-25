@@ -14,22 +14,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.job_portal.repository.JobRepoImpl
 import com.example.job_portal.ui.theme.CoffeeBrown
 import com.example.job_portal.ui.theme.SoftCream
 import com.example.job_portal.ui.theme.White
 import com.example.job_portal.viewmodel.JobViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
-fun SearchScreen() {
-    val repo = remember { JobRepoImpl() }
-    val jobViewModel = remember { JobViewModel(repo) }
+fun SearchScreen(jobViewModel: JobViewModel) {
+    // 1. Get current userId to handle saving persistence
+    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+
+    // Observe the live data from the shared ViewModel
     val jobsFromDb by jobViewModel.allJobs.observeAsState(initial = emptyList())
 
     var searchQuery by remember { mutableStateOf("") }
 
+    // Fetch jobs and saved status when the screen is first launched
     LaunchedEffect(Unit) {
         jobViewModel.fetchAllJobs()
+        if (userId.isNotEmpty()) {
+            jobViewModel.fetchSavedJobs(userId)
+        }
     }
 
     Column(
@@ -38,6 +44,7 @@ fun SearchScreen() {
             .background(SoftCream)
             .padding(16.dp)
     ) {
+        // Search Input Field
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
@@ -55,17 +62,25 @@ fun SearchScreen() {
 
         Spacer(modifier = Modifier.height(20.dp))
 
+        // Results List
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(bottom = 16.dp)
         ) {
-            val filteredJobs = jobsFromDb?.filter {
+            // Filter logic based on search query
+            val filteredJobs = jobsFromDb.filter {
                 it.title.contains(searchQuery, ignoreCase = true) ||
                         it.company.contains(searchQuery, ignoreCase = true)
-            } ?: emptyList()
+            }
 
             items(filteredJobs) { job ->
-                JobItemCard(job) // Using the same card design
+                // 2. FIXED: Passed the userId to the JobItemCard
+                JobItemCard(
+                    job = job,
+                    viewModel = jobViewModel,
+                    userId = userId
+                )
             }
         }
     }

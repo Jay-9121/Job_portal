@@ -3,6 +3,7 @@ package com.example.job_portal
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.util.Patterns
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -26,12 +27,12 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
@@ -105,13 +106,13 @@ fun LoginBody() {
             Text(
                 "Welcome to PathVista Portal. Find your next career move with ease.",
                 modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp),
-                style = TextStyle(textAlign = TextAlign.Center, color = Black.copy(0.6f), fontSize = 15.sp)
+                style = TextStyle(textAlign = TextAlign.Center, color = Color.Black.copy(0.6f), fontSize = 15.sp)
             )
 
             Row(modifier = Modifier.fillMaxWidth()) {
-                SocialMediaCard(Modifier.height(60.dp).weight(1f), com.example.job_portal.R.drawable.face, "Facebook")
+                SocialMediaCard(Modifier.height(60.dp).weight(1f), R.drawable.face, "Facebook")
                 Spacer(modifier = Modifier.width(15.dp))
-                SocialMediaCard(Modifier.height(60.dp).weight(1f), com.example.job_portal.R.drawable.gmail, "Gmail")
+                SocialMediaCard(Modifier.height(60.dp).weight(1f), R.drawable.gmail, "Gmail")
             }
 
             Row(
@@ -126,7 +127,10 @@ fun LoginBody() {
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Next
+                ),
                 placeholder = { Text("abc@gmail.com") },
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = CoffeeCream,
@@ -148,9 +152,9 @@ fun LoginBody() {
                     IconButton(onClick = { visibility = !visibility }) {
                         Icon(
                             painter = if (visibility)
-                                painterResource(com.example.job_portal.R.drawable.baseline_visibility_off_24)
+                                painterResource(R.drawable.baseline_visibility_off_24)
                             else
-                                painterResource(com.example.job_portal.R.drawable.baseline_visibility_24),
+                                painterResource(R.drawable.baseline_visibility_24),
                             contentDescription = null, tint = CoffeeBrown
                         )
                     }
@@ -177,26 +181,34 @@ fun LoginBody() {
 
             Spacer(modifier = Modifier.height(30.dp))
 
-            // --- NAVIGATION LOGIC START ---
+            // --- FIXED NAVIGATION & VALIDATION LOGIC ---
             Button(
                 onClick = {
-                    if (email.isEmpty() || password.isEmpty()) {
+                    val trimmedEmail = email.trim() // Fixes trailing space errors
+
+                    if (trimmedEmail.isEmpty() || password.isEmpty()) {
                         coroutineScope.launch { snackbarHostState.showSnackbar("Email and password cannot be empty") }
                         return@Button
                     }
 
-                    repo.login(email, password) { success, message ->
+                    // Check if the email format is valid using Android Patterns
+                    if (!Patterns.EMAIL_ADDRESS.matcher(trimmedEmail).matches()) {
+                        coroutineScope.launch { snackbarHostState.showSnackbar("Please enter a valid email address") }
+                        return@Button
+                    }
+
+                    repo.login(trimmedEmail, password) { success, message ->
                         if (success) {
                             Toast.makeText(context, "Login successful", Toast.LENGTH_LONG).show()
 
-                            // Check if admin or user
-                            val intent = if (email == "admin@gmail.com") {
+                            // Check if admin or user based on trimmed email
+                            val intent = if (trimmedEmail == "admin@gmail.com") {
                                 Intent(context, DashboardActivity::class.java)
                             } else {
                                 Intent(context, UserDashboardActivity::class.java)
                             }
 
-                            intent.putExtra("email", email)
+                            intent.putExtra("email", trimmedEmail)
                             context.startActivity(intent)
                             activity.finish()
                         } else {
@@ -210,7 +222,6 @@ fun LoginBody() {
             ) {
                 Text("Log In", color = White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
-            // --- NAVIGATION LOGIC END ---
 
             Spacer(modifier = Modifier.height(20.dp))
 
