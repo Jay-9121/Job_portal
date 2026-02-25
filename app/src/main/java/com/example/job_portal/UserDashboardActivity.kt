@@ -33,12 +33,16 @@ class UserDashboardActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserDashboardScreen() {
-    // Shared ViewModel Instance initialized with the Repository
     val repo = remember { JobRepoImpl() }
     val jobViewModel: JobViewModel = remember { JobViewModel(repo) }
 
-    // State for navigation (Index 4 is used for the Saved Jobs screen)
+    // Navigation State
     var selectedIndex by remember { mutableIntStateOf(0) }
+
+    // Fetch user applications immediately so we know what is already "Applied"
+    LaunchedEffect(Unit) {
+        jobViewModel.fetchUserApplications()
+    }
 
     val navItems = listOf(
         NavItem("Home", Icons.Default.Home),
@@ -54,23 +58,18 @@ fun UserDashboardScreen() {
                     Text(
                         text = when(selectedIndex) {
                             4 -> "Saved Jobs"
+                            5 -> "Applied History"
                             else -> "Job Portal"
                         },
                         fontWeight = FontWeight.Bold,
                         color = CoffeeBrown
                     )
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = White
-                )
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = White)
             )
         },
         bottomBar = {
-            NavigationBar(
-                containerColor = White,
-                contentColor = CoffeeBrown
-            ) {
-                // We only show the first 4 items in the BottomNav
+            NavigationBar(containerColor = White, contentColor = CoffeeBrown) {
                 navItems.forEachIndexed { index, item ->
                     NavigationBarItem(
                         selected = selectedIndex == index,
@@ -88,20 +87,18 @@ fun UserDashboardScreen() {
             }
         }
     ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
+        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             when (selectedIndex) {
-                // FIXED: Passing jobViewModel to HomeScreen and SearchScreen
                 0 -> HomeScreen(jobViewModel)
                 1 -> SearchScreen(jobViewModel)
                 2 -> SettingScreen(
-                    onSavedJobsClick = { selectedIndex = 4 }
+                    viewModel = jobViewModel,
+                    onSavedJobsClick = { selectedIndex = 4 },
+                    onHistoryClick = { selectedIndex = 5 }
                 )
                 3 -> ProfileScreen()
                 4 -> SavedJobsScreen(jobViewModel)
+                5 -> AppliedHistoryScreen(jobViewModel)
                 else -> HomeScreen(jobViewModel)
             }
         }

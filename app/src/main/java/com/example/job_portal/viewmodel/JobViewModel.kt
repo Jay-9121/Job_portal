@@ -1,5 +1,6 @@
 package com.example.job_portal.viewmodel
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -55,6 +56,13 @@ class JobViewModel(private val repo: JobRepo) : ViewModel() {
     val userApplications: List<ApplicationModel> = _userApplications
 
     fun submitJobApplication(job: JobModel, email: String, cv: String) {
+        Log.d("FIREBASE_SUBMIT", "Applying for: ${job.title} by $email")
+
+        if (email.isEmpty()) {
+            Log.e("FIREBASE_SUBMIT", "Error: User email is empty.")
+            return
+        }
+
         val newApp = ApplicationModel(
             jobId = job.jobId,
             jobTitle = job.title,
@@ -62,10 +70,11 @@ class JobViewModel(private val repo: JobRepo) : ViewModel() {
             cvDescription = cv,
             status = "Pending"
         )
+
         repo.submitApplication(newApp) { success ->
-            // Re-fetch is handled by the ValueEventListener in the Repo,
-            // but we call it here just in case of manual triggers.
-            if (success) fetchUserApplications()
+            if (success) {
+                fetchUserApplications()
+            }
         }
     }
 
@@ -87,12 +96,33 @@ class JobViewModel(private val repo: JobRepo) : ViewModel() {
         repo.getAllApplications { list ->
             _allApplications.clear()
             _allApplications.addAll(list)
+            Log.d("FIREBASE_FETCH", "Admin fetched ${list.size} applications")
         }
     }
 
+    /**
+     * UPDATED: Fixed to ensure the UI locks immediately.
+     * It updates the local state list so the "enabled" check in the
+     * Compose UI triggers instantly.
+     */
     fun updateApplicationStatus(applicationId: String, newStatus: String) {
         repo.updateApplicationStatus(applicationId, newStatus) { success ->
-            if (success) fetchAllApplications() // Refresh for admin view
+            if (success) {
+                // Find the application in the local list and update it manually
+                val index = _allApplications.indexOfFirst { it.applicationId == applicationId }
+                if (index != -1) {
+                    // Updating the item in the mutableStateListOf triggers recomposition
+                    _allApplications[index] = _allApplications[index].copy(status = newStatus)
+                }
+
+                // Also update the User History list in case it's loaded
+                val userIndex = _userApplications.indexOfFirst { it.applicationId == applicationId }
+                if (userIndex != -1) {
+                    _userApplications[userIndex] = _userApplications[userIndex].copy(status = newStatus)
+                }
+
+                Log.d("STATUS_UPDATE", "Successfully updated locally and on Firebase")
+            }
         }
     }
 
@@ -114,10 +144,11 @@ class JobViewModel(private val repo: JobRepo) : ViewModel() {
             callback(success, message)
         }
     }
+    // Inside JobViewModel
+    fun hasUserApplied(jobId: String): Boolean {
+        return _userApplications.any { it.jobId == jobId }
+    }
 
-    /**
-     * Call this during Logout to ensure the next user doesn't see old data.
-     */
     fun clearAllData() {
         _savedJobIds.clear()
         _userApplications.clear()

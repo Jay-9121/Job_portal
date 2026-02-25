@@ -1,5 +1,6 @@
 package com.example.job_portal.repository
 
+import android.util.Log
 import com.example.job_portal.model.ApplicationModel
 import com.example.job_portal.model.JobModel
 import com.google.firebase.database.*
@@ -61,37 +62,63 @@ class JobRepoImpl : JobRepo {
     }
 
     // --- APPLICATION LOGIC ---
+
+    // 1. Submit Application
     override fun submitApplication(application: ApplicationModel, callback: (Boolean) -> Unit) {
         val id = appRef.push().key ?: ""
+        // Ensure the ID is saved INSIDE the object fields too
         val appWithId = application.copy(applicationId = id)
-        appRef.child(id).setValue(appWithId).addOnCompleteListener { callback(it.isSuccessful) }
+        appRef.child(id).setValue(appWithId).addOnCompleteListener {
+            callback(it.isSuccessful)
+        }
     }
 
+    // 2. Fetch User History (Fixed ID Mapping)
     override fun getUserApplications(userEmail: String, callback: (List<ApplicationModel>) -> Unit) {
-        // Querying applications where userEmail matches
         appRef.orderByChild("userEmail").equalTo(userEmail)
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    val apps = snapshot.children.mapNotNull { it.getValue(ApplicationModel::class.java) }
+                    val apps = snapshot.children.mapNotNull { child ->
+                        val app = child.getValue(ApplicationModel::class.java)
+                        // FORCE the model's applicationId to be the Firebase key
+                        app?.copy(applicationId = child.key ?: "")
+                    }
                     callback(apps)
                 }
                 override fun onCancelled(error: DatabaseError) { callback(emptyList()) }
             })
     }
 
+    // 3. Fetch All for Admin (Fixed ID Mapping)
     override fun getAllApplications(callback: (List<ApplicationModel>) -> Unit) {
         appRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val apps = snapshot.children.mapNotNull { it.getValue(ApplicationModel::class.java) }
+                val apps = snapshot.children.mapNotNull { child ->
+                    val app = child.getValue(ApplicationModel::class.java)
+                    // This is the most important line in the whole app:
+                    app?.apply { applicationId = child.key ?: "" }
+                }
                 callback(apps)
             }
             override fun onCancelled(error: DatabaseError) { callback(emptyList()) }
         })
     }
 
+    // 4. Update Status (The function that powers the Accept/Decline buttons)
     override fun updateApplicationStatus(applicationId: String, newStatus: String, callback: (Boolean) -> Unit) {
-        appRef.child(applicationId).child("status").setValue(newStatus).addOnCompleteListener {
-            callback(it.isSuccessful)
+        if (applicationId.isEmpty()) {
+            Log.e("FirebaseError", "Application ID is empty. Cannot update status.")
+            callback(false)
+            return
         }
+
+        // Updates the "status" field inside the specific application node
+        appRef.child(applicationId).child("status").setValue(newStatus)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Log.d("FirebaseSuccess", "Application $applicationId set to $newStatus")
+                }
+                callback(task.isSuccessful)
+            }
     }
 }

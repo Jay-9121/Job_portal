@@ -27,11 +27,12 @@ import com.google.firebase.auth.FirebaseAuth
 @Composable
 fun HomeScreen(jobViewModel: JobViewModel) {
     val jobsFromDb by jobViewModel.allJobs.observeAsState(initial = emptyList())
-    val context = LocalContext.current
     val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
     LaunchedEffect(Unit) {
         jobViewModel.fetchAllJobs()
+        // Ensure we have the latest application list to check "Applied" status
+        jobViewModel.fetchUserApplications()
         if (userId.isNotEmpty()) {
             jobViewModel.fetchSavedJobs(userId)
         }
@@ -51,19 +52,20 @@ fun HomeScreen(jobViewModel: JobViewModel) {
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(bottom = 16.dp)
-        ) {
-            if (jobsFromDb.isNullOrEmpty()) {
-                item {
-                    Box(modifier = Modifier.fillMaxWidth().padding(top = 50.dp), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = CoffeeBrown)
-                    }
-                }
-            } else {
-                items(jobsFromDb!!) { job ->
+        if (jobsFromDb.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = CoffeeBrown)
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = PaddingValues(bottom = 16.dp)
+            ) {
+                items(jobsFromDb) { job ->
                     JobItemCard(job, jobViewModel, userId)
                 }
             }
@@ -75,6 +77,12 @@ fun HomeScreen(jobViewModel: JobViewModel) {
 fun JobItemCard(job: JobModel, viewModel: JobViewModel, userId: String) {
     val isSaved = viewModel.isJobSaved(job)
     val context = LocalContext.current
+
+    // --- CHECK IF ALREADY APPLIED ---
+    // This logic looks at your local list of applications fetched in the ViewModel
+    val hasApplied = remember(viewModel.userApplications, job.jobId) {
+        viewModel.userApplications.any { it.jobId == job.jobId }
+    }
 
     // States for the Application Dialog
     var showDialog by remember { mutableStateOf(false) }
@@ -108,9 +116,10 @@ fun JobItemCard(job: JobModel, viewModel: JobViewModel, userId: String) {
                 Button(
                     onClick = {
                         if (userEmail.isNotEmpty() && cvDescription.isNotEmpty()) {
-                            // viewModel.submitApplication(job, userEmail, cvDescription) // Add this to VM later
+                            viewModel.submitJobApplication(job, userEmail, cvDescription)
                             Toast.makeText(context, "Application Sent!", Toast.LENGTH_SHORT).show()
                             showDialog = false
+                            cvDescription = ""
                         } else {
                             Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
                         }
@@ -174,13 +183,24 @@ fun JobItemCard(job: JobModel, viewModel: JobViewModel, userId: String) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // --- THE DYNAMIC BUTTON ---
             Button(
-                onClick = { showDialog = true },
-                modifier = Modifier.fillMaxWidth().height(48.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = CoffeeBrown),
+                onClick = { if (!hasApplied) showDialog = true },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                enabled = !hasApplied, // Disables clicking if already applied
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (hasApplied) Color.Gray else CoffeeBrown,
+                    disabledContainerColor = Color.LightGray // Style for "Applied" state
+                ),
                 shape = RoundedCornerShape(10.dp)
             ) {
-                Text("Apply Now", color = White, fontWeight = FontWeight.Bold)
+                Text(
+                    text = if (hasApplied) "Applied" else "Apply Now",
+                    color = if (hasApplied) Color.DarkGray else White,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }

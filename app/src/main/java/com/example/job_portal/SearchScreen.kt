@@ -20,6 +20,7 @@ import com.example.job_portal.ui.theme.White
 import com.example.job_portal.viewmodel.JobViewModel
 import com.google.firebase.auth.FirebaseAuth
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(jobViewModel: JobViewModel) {
     // 1. Get current userId to handle saving persistence
@@ -30,9 +31,11 @@ fun SearchScreen(jobViewModel: JobViewModel) {
 
     var searchQuery by remember { mutableStateOf("") }
 
-    // Fetch jobs and saved status when the screen is first launched
+    // Fetch all necessary data when screen launches
     LaunchedEffect(Unit) {
         jobViewModel.fetchAllJobs()
+        // Critical: fetch applications so we know which buttons to disable
+        jobViewModel.fetchUserApplications()
         if (userId.isNotEmpty()) {
             jobViewModel.fetchSavedJobs(userId)
         }
@@ -51,31 +54,41 @@ fun SearchScreen(jobViewModel: JobViewModel) {
             modifier = Modifier.fillMaxWidth(),
             placeholder = { Text("Search for your dream job...") },
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = CoffeeBrown) },
+            singleLine = true,
             shape = RoundedCornerShape(12.dp),
             colors = TextFieldDefaults.colors(
                 unfocusedContainerColor = White,
                 focusedContainerColor = White,
                 focusedIndicatorColor = CoffeeBrown,
-                unfocusedIndicatorColor = Color.Transparent
+                unfocusedIndicatorColor = Color.Transparent,
+                cursorColor = CoffeeBrown
             )
         )
 
         Spacer(modifier = Modifier.height(20.dp))
 
         // Results List
+        val filteredJobs = jobsFromDb.filter {
+            it.title.contains(searchQuery, ignoreCase = true) ||
+                    it.company.contains(searchQuery, ignoreCase = true)
+        }
+
+        if (filteredJobs.isEmpty() && searchQuery.isNotEmpty()) {
+            Text(
+                text = "No jobs found for '$searchQuery'",
+                color = Color.Gray,
+                modifier = Modifier.padding(8.dp)
+            )
+        }
+
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(bottom = 16.dp)
         ) {
-            // Filter logic based on search query
-            val filteredJobs = jobsFromDb.filter {
-                it.title.contains(searchQuery, ignoreCase = true) ||
-                        it.company.contains(searchQuery, ignoreCase = true)
-            }
-
-            items(filteredJobs) { job ->
-                // 2. FIXED: Passed the userId to the JobItemCard
+            items(filteredJobs, key = { it.jobId }) { job ->
+                // This JobItemCard is the same one used in HomeScreen
+                // It now contains the "Applied" check logic internally
                 JobItemCard(
                     job = job,
                     viewModel = jobViewModel,
