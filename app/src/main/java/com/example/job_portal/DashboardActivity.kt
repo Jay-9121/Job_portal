@@ -124,7 +124,6 @@ fun JobItemCard(
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
-            // Header Row
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -178,10 +177,10 @@ fun JobItemCard(
             HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Details with Labels
-            JobDetailRow(label = "Location", value = job.location)
-            JobDetailRow(label = "Salary", value = job.salary)
-            JobDetailRow(label = "Job Type", value = job.type)
+            // RENAMED CALLS HERE
+            AdminJobDetailRow(label = "Location", value = job.location)
+            AdminJobDetailRow(label = "Salary", value = job.salary)
+            AdminJobDetailRow(label = "Job Type", value = job.type)
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -197,8 +196,9 @@ fun JobItemCard(
     }
 }
 
+// RENAMED THE FUNCTION TO AVOID CONFLICT
 @Composable
-fun JobDetailRow(label: String, value: String) {
+fun AdminJobDetailRow(label: String, value: String) {
     Row(
         modifier = Modifier.padding(vertical = 2.dp),
         verticalAlignment = Alignment.CenterVertically

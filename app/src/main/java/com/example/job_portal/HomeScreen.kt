@@ -17,7 +17,6 @@ import androidx.compose.ui.unit.sp
 import com.example.job_portal.model.JobModel
 import com.example.job_portal.repository.JobRepoImpl
 import com.example.job_portal.ui.theme.CoffeeBrown
-import com.example.job_portal.ui.theme.CoffeeCream
 import com.example.job_portal.ui.theme.SoftCream
 import com.example.job_portal.ui.theme.White
 import com.example.job_portal.viewmodel.JobViewModel
@@ -72,43 +71,62 @@ fun JobItemCard(job: JobModel) {
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = White),
-        elevation = CardDefaults.cardElevation(2.dp)
+        elevation = CardDefaults.cardElevation(4.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(job.title, fontWeight = FontWeight.Bold, fontSize = 17.sp, color = CoffeeBrown)
-                    Text(job.company, color = Color.Gray, fontSize = 14.sp)
-                }
-                CircularProgressIndicator(
-                    progress = { 0.75f },
-                    modifier = Modifier.size(24.dp),
-                    color = CoffeeBrown,
-                    strokeWidth = 3.dp,
-                    trackColor = CoffeeCream
-                )
-            }
+        Column(modifier = Modifier.padding(20.dp)) {
+            // Title and Company Header
+            Text(
+                text = job.title,
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = 20.sp,
+                color = CoffeeBrown
+            )
+            Text(
+                text = job.company,
+                color = Color.Gray,
+                fontSize = 15.sp
+            )
+
             Spacer(modifier = Modifier.height(12.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(job.location, fontSize = 13.sp, color = Color.Gray)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("•", color = Color.Gray)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(job.salary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = CoffeeBrown)
-            }
+            HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Using the UNIQUE helper function name to avoid conflicts
+            HomeJobDetailRow(label = "Location", value = job.location)
+            HomeJobDetailRow(label = "Salary", value = job.salary)
+            HomeJobDetailRow(label = "Job Type", value = job.type)
+
             Spacer(modifier = Modifier.height(16.dp))
+
             Button(
                 onClick = { /* Application Logic */ },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().height(48.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = CoffeeBrown),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(10.dp)
             ) {
-                Text("Apply Now", color = White)
+                Text("Apply Now", color = White, fontWeight = FontWeight.Bold)
             }
         }
+    }
+}
+
+// UNIQUE NAME: This avoids the "Conflicting overloads" error
+@Composable
+fun HomeJobDetailRow(label: String, value: String) {
+    Row(
+        modifier = Modifier.padding(vertical = 2.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "$label: ",
+            fontWeight = FontWeight.Bold,
+            color = CoffeeBrown,
+            fontSize = 14.sp
+        )
+        Text(
+            text = value,
+            color = Color.DarkGray,
+            fontSize = 14.sp
+        )
     }
 }
