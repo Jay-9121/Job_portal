@@ -68,7 +68,7 @@ fun AddJobBody() {
                 CustomTextField(value = salary, label = "Salary (e.g. $50k - $70k)") { salary = it }
                 CustomTextField(value = type, label = "Job Type (Full-time/Part-time)") { type = it }
 
-                // --- ADDED REQUIREMENTS TEXT FIELD ---
+
                 CustomTextField(
                     value = requirements,
                     label = "Job Requirements (Skills, Experience, etc.)",
@@ -84,7 +84,7 @@ fun AddJobBody() {
                             return@Button
                         }
 
-                        // --- UPDATED MODEL CALL ---
+
                         val model = JobModel(
                             jobId = "",
                             title = title,
@@ -92,7 +92,7 @@ fun AddJobBody() {
                             location = location,
                             salary = salary,
                             type = type,
-                            requirements = requirements // Passing the requirements
+                            requirements = requirements
                         )
 
                         jobViewModel.addJob(model) { success, message ->
