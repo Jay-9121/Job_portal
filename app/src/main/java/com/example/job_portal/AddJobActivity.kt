@@ -117,7 +117,7 @@ fun AddJobBody() {
 fun CustomTextField(
     value: String,
     label: String,
-    isSingleLine: Boolean = true, // Added flexibility
+    isSingleLine: Boolean = true,
     onValueChange: (String) -> Unit
 ) {
     OutlinedTextField(
@@ -127,7 +127,7 @@ fun CustomTextField(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         singleLine = isSingleLine,
-        minLines = if (isSingleLine) 1 else 3, // Requirements look better with more space
+        minLines = if (isSingleLine) 1 else 3,
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = CoffeeBrown,
             unfocusedContainerColor = White,
