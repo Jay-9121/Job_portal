@@ -144,7 +144,7 @@ class JobViewModel(private val repo: JobRepo) : ViewModel() {
             callback(success, message)
         }
     }
-    // Inside JobViewModel
+
     fun hasUserApplied(jobId: String): Boolean {
         return _userApplications.any { it.jobId == jobId }
     }

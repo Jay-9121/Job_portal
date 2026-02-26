@@ -72,7 +72,7 @@ fun AddJobBody() {
                 CustomTextField(
                     value = requirements,
                     label = "Job Requirements (Skills, Experience, etc.)",
-                    isSingleLine = false // Allow multiple lines for requirements
+                    isSingleLine = false
                 ) { requirements = it }
 
                 Spacer(modifier = Modifier.height(20.dp))
