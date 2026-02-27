@@ -10,7 +10,7 @@ data class JobModel(
     var location: String = "",
     var salary: String = "",
     var type: String = "",
-    var requirements: String = "" // Added requirements field
+    var requirements: String = ""
 ) {
     /**
      * Converts the model into a Map for Firebase Database operations.
@@ -23,7 +23,7 @@ data class JobModel(
             "location" to location,
             "salary" to salary,
             "type" to type,
-            "requirements" to requirements // Included in the map
+            "requirements" to requirements
         )
     }
 }
