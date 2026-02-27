@@ -126,7 +126,7 @@ class JobViewModel(private val repo: JobRepo) : ViewModel() {
         }
     }
 
-    // --- JOB CRUD (ADMIN) ---
+
     fun addJob(model: JobModel, callback: (Boolean, String) -> Unit) {
         repo.addJob(model, callback)
     }
