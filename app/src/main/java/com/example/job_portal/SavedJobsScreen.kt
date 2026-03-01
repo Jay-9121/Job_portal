@@ -13,8 +13,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.job_portal.ui.theme.CoffeeBrown
-import com.example.job_portal.ui.theme.SoftCream
+// UI Theme Imports - Updated to the modern palette
+import com.example.job_portal.ui.theme.PrimaryIndigo
+import com.example.job_portal.ui.theme.BackgroundGray
+import com.example.job_portal.ui.theme.White
 import com.example.job_portal.viewmodel.JobViewModel
 import com.example.job_portal.viewmodel.UserViewModel
 import com.google.firebase.auth.FirebaseAuth
@@ -26,28 +28,53 @@ fun SavedJobsScreen(jobViewModel: JobViewModel, userViewModel: UserViewModel) {
     val savedIds = jobViewModel.savedJobIds
     val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
+    // Filter jobs based on whether their ID is in the saved list
     val savedJobsList = allJobs.filter { job -> savedIds.contains(job.jobId) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(SoftCream)
+            .background(BackgroundGray) // Updated from SoftCream
             .padding(16.dp)
     ) {
-        Text("Your Saved Jobs", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = CoffeeBrown)
+        // Updated Header with Indigo theme
+        Text(
+            text = "Your Saved Jobs",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = PrimaryIndigo // Updated from CoffeeBrown
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         if (savedJobsList.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("No saved jobs yet!", color = Color.Gray)
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(
+                        painter = androidx.compose.ui.res.painterResource(id = R.drawable.baseline_bookmark_border_24),
+                        contentDescription = null,
+                        tint = Color.LightGray,
+                        modifier = Modifier.size(64.dp)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "No saved jobs yet!",
+                        color = Color.Gray,
+                        fontSize = 16.sp
+                    )
+                }
             }
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(bottom = 16.dp)
+                contentPadding = PaddingValues(bottom = 32.dp) // Extra padding for bottom nav
             ) {
-                items(savedJobsList) { job ->
-                    // FIXED: Now passing all 4 required arguments
+                items(savedJobsList, key = { it.jobId }) { job ->
+                    // Passing all required arguments to JobItemCard
                     JobItemCard(
                         job = job,
                         viewModel = jobViewModel,

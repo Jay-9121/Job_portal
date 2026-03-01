@@ -12,23 +12,25 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.job_portal.ui.theme.CoffeeBrown
-import com.example.job_portal.ui.theme.SoftCream
+// UI Theme Imports - Updated to the modern palette
+import com.example.job_portal.ui.theme.PrimaryIndigo
+import com.example.job_portal.ui.theme.BackgroundGray
 import com.example.job_portal.ui.theme.White
 import com.example.job_portal.viewmodel.JobViewModel
-import com.example.job_portal.viewmodel.UserViewModel // Added import
+import com.example.job_portal.viewmodel.UserViewModel
 import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchScreen(jobViewModel: JobViewModel, userViewModel: UserViewModel) { // Added UserViewModel
+fun SearchScreen(jobViewModel: JobViewModel, userViewModel: UserViewModel) {
     val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
     // Observe Job data and User profile data
     val jobsFromDb by jobViewModel.allJobs.observeAsState(initial = emptyList())
-    val userData by userViewModel.users.observeAsState() // Observe user data here
+    val userData by userViewModel.users.observeAsState()
 
     var searchQuery by remember { mutableStateOf("") }
 
@@ -37,34 +39,53 @@ fun SearchScreen(jobViewModel: JobViewModel, userViewModel: UserViewModel) { // 
         jobViewModel.fetchUserApplications()
         if (userId.isNotEmpty()) {
             jobViewModel.fetchSavedJobs(userId)
-            userViewModel.getUserById(userId) // Fetch the actual user profile
+            userViewModel.getUserById(userId)
         }
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(SoftCream)
-            .padding(16.dp)
+            .background(BackgroundGray) // Updated from SoftCream
+            .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
+        // Search Header
+        Text(
+            text = "Explore Jobs",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = PrimaryIndigo,
+            modifier = Modifier.padding(bottom = 16.dp, start = 4.dp)
+        )
+
+        // Updated Search Bar with Indigo styling
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("Search for your dream job...") },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = CoffeeBrown) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp),
+            placeholder = { Text("Search by title or company...") },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = null,
+                    tint = PrimaryIndigo
+                )
+            },
             singleLine = true,
-            shape = RoundedCornerShape(12.dp),
-            colors = TextFieldDefaults.colors(
-                unfocusedContainerColor = White,
+            shape = RoundedCornerShape(16.dp),
+            colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = White,
-                focusedIndicatorColor = CoffeeBrown,
-                unfocusedIndicatorColor = Color.Transparent,
-                cursorColor = CoffeeBrown
+                unfocusedContainerColor = White,
+                focusedBorderColor = PrimaryIndigo,
+                unfocusedBorderColor = Color.Transparent, // Makes it look like a clean card
+                cursorColor = PrimaryIndigo,
+                focusedLabelColor = PrimaryIndigo
             )
         )
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         val filteredJobs = jobsFromDb.filter {
             it.title.contains(searchQuery, ignoreCase = true) ||
@@ -72,25 +93,27 @@ fun SearchScreen(jobViewModel: JobViewModel, userViewModel: UserViewModel) { // 
         }
 
         if (filteredJobs.isEmpty() && searchQuery.isNotEmpty()) {
-            Text(
-                text = "No jobs found for '$searchQuery'",
-                color = Color.Gray,
-                modifier = Modifier.padding(8.dp)
-            )
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+                Text(
+                    text = "No jobs found for '$searchQuery'",
+                    color = Color.Gray,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(top = 40.dp)
+                )
+            }
         }
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(bottom = 16.dp)
+            contentPadding = PaddingValues(top = 8.dp, bottom = 32.dp)
         ) {
             items(filteredJobs, key = { it.jobId }) { job ->
-                // FIXED: Now passing all 4 required arguments
                 JobItemCard(
                     job = job,
                     viewModel = jobViewModel,
                     userId = userId,
-                    userData = userData // Pass the observed user data
+                    userData = userData
                 )
             }
         }
