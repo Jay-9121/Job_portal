@@ -14,14 +14,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.job_portal.model.ApplicationModel
-import com.example.job_portal.ui.theme.CoffeeBrown
-import com.example.job_portal.ui.theme.SoftCream
+// Updated UI Theme Imports
+import com.example.job_portal.ui.theme.PrimaryIndigo
+import com.example.job_portal.ui.theme.BackgroundGray
 import com.example.job_portal.ui.theme.White
 import com.example.job_portal.viewmodel.JobViewModel
 
 @Composable
 fun AdminReviewScreen(viewModel: JobViewModel) {
-    // 1. Reverse the list so newest applicants are at the top
     val allApps = viewModel.allApplications.reversed()
 
     LaunchedEffect(Unit) {
@@ -31,14 +31,14 @@ fun AdminReviewScreen(viewModel: JobViewModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(SoftCream)
+            .background(BackgroundGray) // Updated from SoftCream
             .padding(16.dp)
     ) {
         Text(
             text = "Review Applications",
             fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = CoffeeBrown
+            fontWeight = FontWeight.ExtraBold,
+            color = PrimaryIndigo // Updated from CoffeeBrown
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -52,7 +52,6 @@ fun AdminReviewScreen(viewModel: JobViewModel) {
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 contentPadding = PaddingValues(bottom = 16.dp)
             ) {
-                // Using 'key' ensures Compose identifies each card correctly
                 items(allApps, key = { it.applicationId }) { app ->
                     AdminReviewCard(app, viewModel)
                 }
@@ -63,11 +62,7 @@ fun AdminReviewScreen(viewModel: JobViewModel) {
 
 @Composable
 fun AdminReviewCard(app: ApplicationModel, viewModel: JobViewModel) {
-    // We create a local state that tracks the status.
-    // This makes the UI change INSTANTLY even if the internet is slow.
     var currentStatus by remember(app.status) { mutableStateOf(app.status) }
-
-    // Buttons are ONLY enabled if the status is exactly "Pending"
     val isPending = currentStatus == "Pending"
 
     Card(
@@ -79,54 +74,103 @@ fun AdminReviewCard(app: ApplicationModel, viewModel: JobViewModel) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(app.jobTitle, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = CoffeeBrown)
-                    Text("Applicant: ${app.userEmail}", fontSize = 14.sp, color = Color.Gray)
-                    // DEBUG TEXT: Remove this after it works
-                    Text("ID: ${app.applicationId}", fontSize = 10.sp, color = Color.LightGray)
+                    Text(
+                        text = app.jobTitle,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = PrimaryIndigo // Updated
+                    )
+                    Text(
+                        text = "Applicant: ${app.userEmail}",
+                        fontSize = 14.sp,
+                        color = Color.Gray
+                    )
                 }
 
                 val badgeColor = when(currentStatus) {
-                    "Accepted" -> Color(0xFF4CAF50)
-                    "Declined" -> Color(0xFFF44336)
-                    else -> Color(0xFFFF9800)
+                    "Accepted" -> Color(0xFF2E7D32) // Deeper Emerald
+                    "Declined" -> Color(0xFFC62828) // Deeper Crimson
+                    else -> Color(0xFFF9A825) // Amber
                 }
-                Text(currentStatus, color = badgeColor, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+
+                Surface(
+                    color = badgeColor.copy(alpha = 0.1f),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = currentStatus,
+                        color = badgeColor,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
-            Text(app.cvDescription, fontSize = 14.sp, color = Color.DarkGray)
+
+            Text(
+                text = "Cover Letter / Summary:",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Gray
+            )
+
+            Text(
+                text = app.cvDescription,
+                fontSize = 14.sp,
+                color = Color.DarkGray,
+                lineHeight = 20.sp
+            )
+
             Spacer(modifier = Modifier.height(16.dp))
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                // Accept Button
                 Button(
                     onClick = {
                         if (app.applicationId.isNotEmpty()) {
-                            currentStatus = "Accepted" // Force the UI to lock immediately
+                            currentStatus = "Accepted"
                             viewModel.updateApplicationStatus(app.applicationId, "Accepted")
                         }
                     },
                     modifier = Modifier.weight(1f),
-                    enabled = isPending, // This will become false instantly
+                    enabled = isPending,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF4CAF50),
-                        disabledContainerColor = if (currentStatus == "Accepted") Color(0xFF4CAF50).copy(0.4f) else Color.LightGray
+                        containerColor = Color(0xFF2E7D32),
+                        disabledContainerColor = if (currentStatus == "Accepted") Color(0xFF2E7D32).copy(0.4f) else Color.LightGray
+                    ),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text(
+                        text = if (currentStatus == "Accepted") "Accepted" else "Accept",
+                        color = White,
+                        fontWeight = FontWeight.Bold
                     )
-                ) { Text(if (currentStatus == "Accepted") "Accepted" else "Accept") }
+                }
 
+                // Decline Button
                 Button(
                     onClick = {
                         if (app.applicationId.isNotEmpty()) {
-                            currentStatus = "Declined" // Force the UI to lock immediately
+                            currentStatus = "Declined"
                             viewModel.updateApplicationStatus(app.applicationId, "Declined")
                         }
                     },
                     modifier = Modifier.weight(1f),
-                    enabled = isPending, // This will become false instantly
+                    enabled = isPending,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFF44336),
-                        disabledContainerColor = if (currentStatus == "Declined") Color(0xFFF44336).copy(0.4f) else Color.LightGray
+                        containerColor = Color(0xFFC62828),
+                        disabledContainerColor = if (currentStatus == "Declined") Color(0xFFC62828).copy(0.4f) else Color.LightGray
+                    ),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text(
+                        text = if (currentStatus == "Declined") "Declined" else "Decline",
+                        color = White,
+                        fontWeight = FontWeight.Bold
                     )
-                ) { Text(if (currentStatus == "Declined") "Declined" else "Decline") }
+                }
             }
         }
     }

@@ -28,8 +28,11 @@ import androidx.compose.ui.unit.sp
 import com.example.job_portal.model.ApplicationModel
 import com.example.job_portal.model.JobModel
 import com.example.job_portal.repository.JobRepoImpl
-import com.example.job_portal.ui.theme.CoffeeBrown
-import com.example.job_portal.ui.theme.SoftCream
+// UI Theme Imports Updated to use modern palette
+import com.example.job_portal.ui.theme.PrimaryIndigo
+import com.example.job_portal.ui.theme.SecondaryBlue
+import com.example.job_portal.ui.theme.AccentAmber
+import com.example.job_portal.ui.theme.BackgroundGray
 import com.example.job_portal.ui.theme.White
 import com.example.job_portal.viewmodel.JobViewModel
 import com.google.firebase.auth.FirebaseAuth
@@ -48,7 +51,7 @@ class DashboardActivity : ComponentActivity() {
             Scaffold(
                 topBar = {
                     TopAppBar(
-                        title = { Text("Admin Panel", fontWeight = FontWeight.Bold, color = CoffeeBrown) },
+                        title = { Text("Admin Panel", fontWeight = FontWeight.Bold, color = PrimaryIndigo) },
                         actions = {
                             IconButton(onClick = {
                                 viewModel.clearAllData()
@@ -56,7 +59,7 @@ class DashboardActivity : ComponentActivity() {
                                 context.startActivity(Intent(context, LoginActivity::class.java))
                                 finish()
                             }) {
-                                Icon(Icons.Default.ExitToApp, contentDescription = "Logout", tint = CoffeeBrown)
+                                Icon(Icons.Default.ExitToApp, contentDescription = "Logout", tint = PrimaryIndigo)
                             }
                         },
                         colors = TopAppBarDefaults.topAppBarColors(containerColor = White)
@@ -68,13 +71,23 @@ class DashboardActivity : ComponentActivity() {
                             selected = selectedTab == 0,
                             onClick = { selectedTab = 0 },
                             label = { Text("Jobs") },
-                            icon = { Icon(Icons.Default.List, null) }
+                            icon = { Icon(Icons.Default.List, null) },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = PrimaryIndigo,
+                                selectedTextColor = PrimaryIndigo,
+                                indicatorColor = SecondaryBlue.copy(alpha = 0.1f)
+                            )
                         )
                         NavigationBarItem(
                             selected = selectedTab == 1,
                             onClick = { selectedTab = 1 },
                             label = { Text("Applicants") },
-                            icon = { Icon(Icons.Default.Person, null) }
+                            icon = { Icon(Icons.Default.Person, null) },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = PrimaryIndigo,
+                                selectedTextColor = PrimaryIndigo,
+                                indicatorColor = SecondaryBlue.copy(alpha = 0.1f)
+                            )
                         )
                     }
                 }
@@ -108,7 +121,7 @@ fun AdminDashboardScreen(jobViewModel: JobViewModel, onAddClick: () -> Unit) {
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onAddClick,
-                containerColor = CoffeeBrown,
+                containerColor = PrimaryIndigo,
                 contentColor = White
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Job")
@@ -119,10 +132,10 @@ fun AdminDashboardScreen(jobViewModel: JobViewModel, onAddClick: () -> Unit) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(SoftCream)
+                .background(BackgroundGray)
                 .padding(16.dp)
         ) {
-            Text("Manage Job Postings", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = CoffeeBrown)
+            Text("Manage Job Postings", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryIndigo)
             Spacer(modifier = Modifier.height(16.dp))
 
             if (jobsFromDb.isEmpty()) {
@@ -132,7 +145,6 @@ fun AdminDashboardScreen(jobViewModel: JobViewModel, onAddClick: () -> Unit) {
             } else {
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     items(jobsFromDb) { job ->
-                        // FIXED: Using AdminJobItemCard
                         AdminJobItemCard(
                             job = job,
                             onDelete = { jobId ->
@@ -178,8 +190,8 @@ fun AdminApplicationsList(viewModel: JobViewModel) {
         viewModel.fetchAllApplications()
     }
 
-    Column(modifier = Modifier.fillMaxSize().background(SoftCream).padding(16.dp)) {
-        Text("Incoming Applications", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = CoffeeBrown)
+    Column(modifier = Modifier.fillMaxSize().background(BackgroundGray).padding(16.dp)) {
+        Text("Incoming Applications", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryIndigo)
 
         Row(
             modifier = Modifier
@@ -193,9 +205,9 @@ fun AdminApplicationsList(viewModel: JobViewModel) {
                     onClick = { selectedFilter = option },
                     label = { Text(option) },
                     colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = CoffeeBrown,
+                        selectedContainerColor = PrimaryIndigo,
                         selectedLabelColor = White,
-                        labelColor = CoffeeBrown
+                        labelColor = PrimaryIndigo
                     )
                 )
             }
@@ -231,7 +243,7 @@ fun AdminAppCard(app: ApplicationModel, viewModel: JobViewModel) {
     if (showFullCv) {
         AlertDialog(
             onDismissRequest = { showFullCv = false },
-            title = { Text("CV / Motivation", fontWeight = FontWeight.Bold) },
+            title = { Text("CV / Motivation", fontWeight = FontWeight.Bold, color = PrimaryIndigo) },
             text = {
                 Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                     Text(text = app.cvDescription, fontSize = 16.sp, color = Color.DarkGray)
@@ -239,7 +251,7 @@ fun AdminAppCard(app: ApplicationModel, viewModel: JobViewModel) {
             },
             confirmButton = {
                 TextButton(onClick = { showFullCv = false }) {
-                    Text("Close", color = CoffeeBrown, fontWeight = FontWeight.Bold)
+                    Text("Close", color = PrimaryIndigo, fontWeight = FontWeight.Bold)
                 }
             },
             shape = RoundedCornerShape(16.dp),
@@ -256,7 +268,7 @@ fun AdminAppCard(app: ApplicationModel, viewModel: JobViewModel) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(app.jobTitle, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = CoffeeBrown)
+                    Text(app.jobTitle, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = PrimaryIndigo)
                     Text("From: ${app.userEmail}", fontSize = 14.sp, color = Color.Gray)
                 }
 
@@ -264,9 +276,9 @@ fun AdminAppCard(app: ApplicationModel, viewModel: JobViewModel) {
                     text = currentStatus,
                     fontWeight = FontWeight.Bold,
                     color = when(currentStatus) {
-                        "Accepted" -> Color(0xFF4CAF50)
-                        "Declined" -> Color(0xFFF44336)
-                        else -> Color(0xFFFF9800)
+                        "Accepted" -> Color(0xFF10B981) // Modern Success Green
+                        "Declined" -> Color(0xFFEF4444) // Modern Error Red
+                        else -> AccentAmber
                     }
                 )
             }
@@ -275,12 +287,12 @@ fun AdminAppCard(app: ApplicationModel, viewModel: JobViewModel) {
 
             Surface(
                 onClick = { showFullCv = true },
-                color = SoftCream.copy(alpha = 0.5f),
+                color = BackgroundGray,
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(12.dp)) {
-                    Text("Motivation (Click to expand):", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = CoffeeBrown)
+                    Text("Motivation (Click to expand):", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = PrimaryIndigo)
                     Text(
                         text = app.cvDescription,
                         fontSize = 14.sp,
@@ -302,10 +314,11 @@ fun AdminAppCard(app: ApplicationModel, viewModel: JobViewModel) {
                     },
                     enabled = isPending,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF4CAF50),
-                        disabledContainerColor = if (currentStatus == "Accepted") Color(0xFF4CAF50).copy(0.4f) else Color.LightGray
+                        containerColor = Color(0xFF10B981),
+                        disabledContainerColor = if (currentStatus == "Accepted") Color(0xFF10B981).copy(0.4f) else Color.LightGray
                     ),
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(10.dp)
                 ) { Text(if (currentStatus == "Accepted") "Accepted" else "Accept") }
 
                 Button(
@@ -317,17 +330,17 @@ fun AdminAppCard(app: ApplicationModel, viewModel: JobViewModel) {
                     },
                     enabled = isPending,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFF44336),
-                        disabledContainerColor = if (currentStatus == "Declined") Color(0xFFF44336).copy(0.4f) else Color.LightGray
+                        containerColor = Color(0xFFEF4444),
+                        disabledContainerColor = if (currentStatus == "Declined") Color(0xFFEF4444).copy(0.4f) else Color.LightGray
                     ),
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(10.dp)
                 ) { Text(if (currentStatus == "Declined") "Declined" else "Decline") }
             }
         }
     }
 }
 
-// RENAMED to AdminJobItemCard to avoid conflict with User side
 @Composable
 fun AdminJobItemCard(job: JobModel, onDelete: (String) -> Unit, onEdit: (JobModel) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
@@ -340,8 +353,8 @@ fun AdminJobItemCard(job: JobModel, onDelete: (String) -> Unit, onEdit: (JobMode
         Column(modifier = Modifier.padding(20.dp)) {
             Row(verticalAlignment = Alignment.Top) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(job.title, fontWeight = FontWeight.ExtraBold, fontSize = 20.sp, color = CoffeeBrown)
-                    Text(job.company, color = Color.Gray, fontSize = 15.sp)
+                    Text(job.title, fontWeight = FontWeight.ExtraBold, fontSize = 20.sp, color = PrimaryIndigo)
+                    Text(job.company, color = SecondaryBlue, fontSize = 15.sp)
                 }
                 Box {
                     IconButton(onClick = { expanded = true }) { Icon(Icons.Default.MoreVert, null) }
@@ -360,7 +373,7 @@ fun AdminJobItemCard(job: JobModel, onDelete: (String) -> Unit, onEdit: (JobMode
                 Spacer(modifier = Modifier.height(8.dp))
                 HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("Requirements:", fontWeight = FontWeight.Bold, color = CoffeeBrown, fontSize = 14.sp)
+                Text("Requirements:", fontWeight = FontWeight.Bold, color = PrimaryIndigo, fontSize = 14.sp)
                 Text(
                     text = job.requirements,
                     color = Color.DarkGray,
@@ -376,7 +389,7 @@ fun AdminJobItemCard(job: JobModel, onDelete: (String) -> Unit, onEdit: (JobMode
 @Composable
 fun AdminJobDetailRow(label: String, value: String) {
     Row(modifier = Modifier.padding(vertical = 2.dp)) {
-        Text("$label: ", fontWeight = FontWeight.Bold, color = CoffeeBrown, fontSize = 14.sp)
+        Text("$label: ", fontWeight = FontWeight.Bold, color = PrimaryIndigo, fontSize = 14.sp)
         Text(value, color = Color.DarkGray, fontSize = 14.sp)
     }
 }

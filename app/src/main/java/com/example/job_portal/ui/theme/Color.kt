@@ -17,3 +17,7 @@ val CoffeeBrown = Color(0xFF4B3621)      // Deep Coffee Brown (Primary)
 val CoffeeLight = Color(0xFF6F4E37)      // Lighter Coffee/Bronze
 val CoffeeCream = Color(0xFFF5F5DC)      // Beige/Cream for background fields // Standard black
 val SoftCream = Color(0xFFFAF9F6)
+val PrimaryIndigo = Color(0xFF1E3A8A)    // Deep Indigo-Blue
+val SecondaryBlue = Color(0xFF3B82F6)    // Clean Modern Blue
+val AccentAmber = Color(0xFFF59E0B)      // Warm Amber for Buttons
+val BackgroundGray = Color(0xFFF9FAFB)   // Soft Gray-White

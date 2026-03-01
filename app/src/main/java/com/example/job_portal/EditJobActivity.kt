@@ -6,15 +6,23 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.job_portal.model.JobModel
 import com.example.job_portal.repository.JobRepoImpl
-import com.example.job_portal.ui.theme.CoffeeBrown
-import com.example.job_portal.ui.theme.SoftCream
+// UI Theme Imports - Updated to the modern palette
+import com.example.job_portal.ui.theme.PrimaryIndigo
+import com.example.job_portal.ui.theme.BackgroundGray
+import com.example.job_portal.ui.theme.White
 import com.example.job_portal.viewmodel.JobViewModel
 
 class EditJobActivity : ComponentActivity() {
@@ -45,17 +53,43 @@ fun EditJobBody(id: String, t: String, c: String, l: String, s: String, ty: Stri
     var type by remember { mutableStateOf(ty) }
     val context = LocalContext.current
 
-    Column(modifier = Modifier.fillMaxSize().background(SoftCream).padding(16.dp)) {
-        Text("Edit Job Posting", style = MaterialTheme.typography.headlineMedium, color = CoffeeBrown)
-        Spacer(modifier = Modifier.height(20.dp))
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(BackgroundGray) // Updated background
+            .verticalScroll(rememberScrollState())
+            .padding(24.dp)
+    ) {
+        Text(
+            text = "Edit Job Posting",
+            fontSize = 28.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = PrimaryIndigo // Updated title color
+        )
 
-        CustomTextField(value = title, label = "Job Title") { title = it }
-        CustomTextField(value = company, label = "Company") { company = it }
-        CustomTextField(value = location, label = "Location") { location = it }
-        CustomTextField(value = salary, label = "Salary") { salary = it }
-        CustomTextField(value = type, label = "Job Type") { type = it }
+        Text(
+            text = "Update the details for this position.",
+            fontSize = 14.sp,
+            color = Color.Gray,
+            modifier = Modifier.padding(top = 4.dp, bottom = 24.dp)
+        )
 
-        Spacer(modifier = Modifier.height(30.dp))
+        // Updated TextFields with Indigo styling
+        EditJobTextField(value = title, label = "Job Title") { title = it }
+        Spacer(modifier = Modifier.height(16.dp))
+
+        EditJobTextField(value = company, label = "Company Name") { company = it }
+        Spacer(modifier = Modifier.height(16.dp))
+
+        EditJobTextField(value = location, label = "Location") { location = it }
+        Spacer(modifier = Modifier.height(16.dp))
+
+        EditJobTextField(value = salary, label = "Salary Range") { salary = it }
+        Spacer(modifier = Modifier.height(16.dp))
+
+        EditJobTextField(value = type, label = "Job Type (e.g. Full-time)") { type = it }
+
+        Spacer(modifier = Modifier.height(40.dp))
 
         Button(
             onClick = {
@@ -65,10 +99,29 @@ fun EditJobBody(id: String, t: String, c: String, l: String, s: String, ty: Stri
                     if (success) (context as ComponentActivity).finish()
                 }
             },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = CoffeeBrown)
+            modifier = Modifier.fillMaxWidth().height(56.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = PrimaryIndigo) // Updated button color
         ) {
-            Text("Update Job")
+            Text("Update Job", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = White)
         }
     }
+}
+
+@Composable
+fun EditJobTextField(value: String, label: String, onValueChange: (String) -> Unit) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label) },
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = PrimaryIndigo,
+            unfocusedBorderColor = Color.LightGray,
+            focusedLabelColor = PrimaryIndigo,
+            unfocusedContainerColor = White,
+            focusedContainerColor = White
+        )
+    )
 }

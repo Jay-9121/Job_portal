@@ -15,18 +15,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.job_portal.model.ApplicationModel
-import com.example.job_portal.ui.theme.CoffeeBrown
-import com.example.job_portal.ui.theme.SoftCream
+// Updated UI Theme Imports
+import com.example.job_portal.ui.theme.PrimaryIndigo
+import com.example.job_portal.ui.theme.BackgroundGray
 import com.example.job_portal.ui.theme.White
 import com.example.job_portal.viewmodel.JobViewModel
 
 @Composable
 fun AppliedHistoryScreen(viewModel: JobViewModel) {
-    // Accessing the state-backed list from the ViewModel
     val applications = viewModel.userApplications
 
-    // Triggers the initial fetch. Because the Repo uses ValueEventListener,
-    // any status update from the Admin will automatically refresh this list.
     LaunchedEffect(Unit) {
         viewModel.fetchUserApplications()
     }
@@ -34,15 +32,15 @@ fun AppliedHistoryScreen(viewModel: JobViewModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(SoftCream)
+            .background(BackgroundGray) // Updated from SoftCream
             .padding(16.dp)
     ) {
         Text(
             text = "My Applications",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = CoffeeBrown,
-            modifier = Modifier.padding(bottom = 16.dp)
+            fontSize = 28.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = PrimaryIndigo, // Updated from CoffeeBrown
+            modifier = Modifier.padding(bottom = 20.dp, top = 8.dp)
         )
 
         if (applications.isEmpty()) {
@@ -59,8 +57,8 @@ fun AppliedHistoryScreen(viewModel: JobViewModel) {
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = PaddingValues(bottom = 16.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = PaddingValues(bottom = 24.dp)
             ) {
                 items(applications) { app ->
                     ApplicationStatusCard(app)
@@ -72,18 +70,18 @@ fun AppliedHistoryScreen(viewModel: JobViewModel) {
 
 @Composable
 fun ApplicationStatusCard(app: ApplicationModel) {
-    // UI logic for status colors
+    // Professional status colors
     val statusColor = when (app.status) {
-        "Accepted" -> Color(0xFF4CAF50) // Green
-        "Declined" -> Color(0xFFF44336) // Red
-        else -> Color(0xFFFF9800)       // Orange (Pending)
+        "Accepted" -> Color(0xFF2E7D32) // Emerald Green
+        "Declined" -> Color(0xFFC62828) // Crimson Red
+        else -> Color(0xFFF9A825)       // Amber Orange (Pending)
     }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = White),
-        elevation = CardDefaults.cardElevation(2.dp)
+        elevation = CardDefaults.cardElevation(4.dp) // Slightly higher elevation for modern look
     ) {
         Row(
             modifier = Modifier
@@ -95,30 +93,30 @@ fun ApplicationStatusCard(app: ApplicationModel) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = app.jobTitle,
-                    fontWeight = FontWeight.ExtraBold,
+                    fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
-                    color = CoffeeBrown
+                    color = PrimaryIndigo // Updated from CoffeeBrown
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Status: ${app.status}",
+                    text = "Applied for PathVista Portal",
                     fontSize = 13.sp,
                     color = Color.Gray
                 )
             }
 
-            // Status Badge with soft background
+            // Status Badge with refined border and soft background
             Surface(
-                color = statusColor.copy(alpha = 0.1f),
-                shape = RoundedCornerShape(8.dp),
-                border = androidx.compose.foundation.BorderStroke(1.dp, statusColor)
+                color = statusColor.copy(alpha = 0.08f),
+                shape = RoundedCornerShape(12.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, statusColor.copy(alpha = 0.5f))
             ) {
                 Text(
                     text = app.status,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
                     color = statusColor,
                     fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.ExtraBold
                 )
             }
         }

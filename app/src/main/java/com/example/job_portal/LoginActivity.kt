@@ -8,7 +8,6 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -37,7 +36,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import com.example.job_portal.repository.UserRepoImpl
-import com.example.job_portal.ui.theme.*
+import com.example.job_portal.ui.theme.PrimaryIndigo
+import com.example.job_portal.ui.theme.SecondaryBlue
+import com.example.job_portal.ui.theme.BackgroundGray
+import com.example.job_portal.ui.theme.White
 import kotlinx.coroutines.launch
 
 class LoginActivity : ComponentActivity() {
@@ -59,71 +61,71 @@ fun LoginBody() {
     val context = LocalContext.current
     val activity = context as Activity
     val snackbarHostState = remember { SnackbarHostState() }
-    val repo = UserRepoImpl()
+    val repo = remember { UserRepoImpl() }
     val coroutineScope = rememberCoroutineScope()
     var showDialog by remember { mutableStateOf(false) }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        containerColor = BackgroundGray
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(SoftCream)
+                .background(BackgroundGray)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp),
+                .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (showDialog) {
                 AlertDialog(
                     onDismissRequest = { showDialog = false },
                     confirmButton = {
-                        Text("Ok", color = CoffeeBrown, modifier = Modifier.clickable { showDialog = false })
+                        Text("Ok", color = PrimaryIndigo, modifier = Modifier.clickable { showDialog = false }.padding(8.dp))
                     },
                     dismissButton = {
-                        Text("Cancel", color = CoffeeBrown.copy(0.6f), modifier = Modifier.clickable { showDialog = false })
+                        Text("Cancel", color = Color.Gray, modifier = Modifier.clickable { showDialog = false }.padding(8.dp))
                     },
-                    title = { Text("Confirm", color = CoffeeBrown) },
-                    text = { Text("Are you sure you want to delete?") },
-                    properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = true)
+                    title = { Text("Confirm", color = PrimaryIndigo, fontWeight = FontWeight.Bold) },
+                    text = { Text("Are you sure you want to proceed?") },
+                    properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = true),
+                    containerColor = White,
+                    shape = RoundedCornerShape(16.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(60.dp))
+            // Pushes content down slightly for a balanced look
+            Spacer(modifier = Modifier.height(80.dp))
+
+            // Brand/App Icon could go here
+            Icon(
+                painter = painterResource(id = R.drawable.baseline_work_24), // Example icon
+                contentDescription = null,
+                modifier = Modifier.size(64.dp),
+                tint = PrimaryIndigo
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
 
             Text(
                 "Sign In",
                 style = TextStyle(
                     textAlign = TextAlign.Center,
-                    fontSize = 28.sp,
-                    color = CoffeeBrown,
-                    fontWeight = FontWeight.Bold
+                    fontSize = 32.sp,
+                    color = PrimaryIndigo,
+                    fontWeight = FontWeight.ExtraBold
                 ),
                 modifier = Modifier.fillMaxWidth()
             )
 
             Text(
-                "Welcome to PathVista Portal. Find your next career move with ease.",
-                modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp),
-                style = TextStyle(textAlign = TextAlign.Center, color = Color.Black.copy(0.6f), fontSize = 15.sp)
+                "Access your PathVista account to manage your applications and profile.",
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 40.dp),
+                style = TextStyle(textAlign = TextAlign.Center, color = Color.Gray, fontSize = 15.sp)
             )
 
-            Row(modifier = Modifier.fillMaxWidth()) {
-                SocialMediaCard(Modifier.height(60.dp).weight(1f), R.drawable.face, "Facebook")
-                Spacer(modifier = Modifier.width(15.dp))
-                SocialMediaCard(Modifier.height(60.dp).weight(1f), R.drawable.gmail, "Gmail")
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 40.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                HorizontalDivider(modifier = Modifier.weight(1f), color = CoffeeBrown.copy(alpha = 0.2f))
-                Text("OR", modifier = Modifier.padding(horizontal = 20.dp), color = CoffeeBrown.copy(alpha = 0.5f))
-                HorizontalDivider(modifier = Modifier.weight(1f), color = CoffeeBrown.copy(alpha = 0.2f))
-            }
-
+            // --- Credential Fields ---
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -131,23 +133,26 @@ fun LoginBody() {
                     keyboardType = KeyboardType.Email,
                     imeAction = ImeAction.Next
                 ),
-                placeholder = { Text("abc@gmail.com") },
-                colors = TextFieldDefaults.colors(
-                    unfocusedContainerColor = CoffeeCream,
-                    focusedContainerColor = CoffeeCream,
-                    focusedIndicatorColor = CoffeeBrown,
-                    unfocusedIndicatorColor = Color.Transparent
+                label = { Text("Email Address") },
+                placeholder = { Text("example@mail.com") },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = PrimaryIndigo,
+                    unfocusedBorderColor = Color.LightGray,
+                    focusedLabelColor = PrimaryIndigo,
+                    unfocusedContainerColor = White,
+                    focusedContainerColor = White
                 ),
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(15.dp)
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp)
             )
 
-            Spacer(modifier = Modifier.height(15.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                placeholder = { Text("********") },
+                label = { Text("Password") },
                 trailingIcon = {
                     IconButton(onClick = { visibility = !visibility }) {
                         Icon(
@@ -155,107 +160,93 @@ fun LoginBody() {
                                 painterResource(R.drawable.baseline_visibility_off_24)
                             else
                                 painterResource(R.drawable.baseline_visibility_24),
-                            contentDescription = null, tint = CoffeeBrown
+                            contentDescription = null,
+                            tint = PrimaryIndigo
                         )
                     }
                 },
                 visualTransformation = if (!visibility) PasswordVisualTransformation() else VisualTransformation.None,
-                colors = TextFieldDefaults.colors(
-                    unfocusedContainerColor = CoffeeCream,
-                    focusedContainerColor = CoffeeCream,
-                    focusedIndicatorColor = CoffeeBrown,
-                    unfocusedIndicatorColor = Color.Transparent
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = PrimaryIndigo,
+                    unfocusedBorderColor = Color.LightGray,
+                    focusedLabelColor = PrimaryIndigo,
+                    unfocusedContainerColor = White,
+                    focusedContainerColor = White
                 ),
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(15.dp)
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp)
             )
 
             Text(
-                "Forget Password?",
-                color = CoffeeLight,
-                modifier = Modifier.fillMaxWidth().padding(top = 12.dp).clickable {
-                    context.startActivity(Intent(context, ForgetPasswordActivity::class.java))
-                },
-                style = TextStyle(textAlign = TextAlign.End, fontWeight = FontWeight.Medium)
+                "Forgot Password?",
+                color = SecondaryBlue,
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .padding(top = 12.dp)
+                    .clickable {
+                        context.startActivity(Intent(context, ForgetPasswordActivity::class.java))
+                    },
+                style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 14.sp)
             )
 
-            Spacer(modifier = Modifier.height(30.dp))
+            Spacer(modifier = Modifier.height(40.dp))
 
-            // --- FIXED NAVIGATION & VALIDATION LOGIC ---
+            // --- Action Button ---
             Button(
                 onClick = {
-                    val trimmedEmail = email.trim() // Fixes trailing space errors
-
+                    val trimmedEmail = email.trim()
                     if (trimmedEmail.isEmpty() || password.isEmpty()) {
-                        coroutineScope.launch { snackbarHostState.showSnackbar("Email and password cannot be empty") }
+                        coroutineScope.launch { snackbarHostState.showSnackbar("Please enter all credentials") }
                         return@Button
                     }
 
-                    // Check if the email format is valid using Android Patterns
                     if (!Patterns.EMAIL_ADDRESS.matcher(trimmedEmail).matches()) {
-                        coroutineScope.launch { snackbarHostState.showSnackbar("Please enter a valid email address") }
+                        coroutineScope.launch { snackbarHostState.showSnackbar("Invalid email format") }
                         return@Button
                     }
 
                     repo.login(trimmedEmail, password) { success, message ->
                         if (success) {
-                            Toast.makeText(context, "Login successful", Toast.LENGTH_LONG).show()
-
-                            // Check if admin or user based on trimmed email
+                            Toast.makeText(context, "Welcome back!", Toast.LENGTH_SHORT).show()
                             val intent = if (trimmedEmail == "admin@gmail.com") {
                                 Intent(context, DashboardActivity::class.java)
                             } else {
                                 Intent(context, UserDashboardActivity::class.java)
                             }
-
                             intent.putExtra("email", trimmedEmail)
                             context.startActivity(intent)
                             activity.finish()
                         } else {
-                            coroutineScope.launch { snackbarHostState.showSnackbar(message ?: "Login failed") }
+                            coroutineScope.launch { snackbarHostState.showSnackbar(message ?: "Authentication failed") }
                         }
                     }
                 },
                 shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.fillMaxWidth().height(55.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = CoffeeBrown)
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = PrimaryIndigo)
             ) {
                 Text("Log In", color = White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
             Text(
                 buildAnnotatedString {
-                    append("Don't have account? ")
-                    withStyle(SpanStyle(color = CoffeeBrown, fontWeight = FontWeight.Bold)) { append("Sign up") }
+                    append("New to PathVista? ")
+                    withStyle(SpanStyle(color = PrimaryIndigo, fontWeight = FontWeight.ExtraBold)) {
+                        append("Create Account")
+                    }
                 },
                 modifier = Modifier.clickable {
                     context.startActivity(Intent(context, RegistrationActivity::class.java))
                     activity.finish()
                 },
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                fontSize = 15.sp
             )
-            Spacer(modifier = Modifier.height(20.dp))
-        }
-    }
-}
 
-@Composable
-fun SocialMediaCard(modifier: Modifier, image: Int, label: String) {
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = White),
-        elevation = CardDefaults.cardElevation(2.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxSize(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Image(painter = painterResource(image), contentDescription = null, modifier = Modifier.size(24.dp))
-            Spacer(modifier = Modifier.width(10.dp))
-            Text(label, color = CoffeeBrown, fontWeight = FontWeight.Medium)
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }

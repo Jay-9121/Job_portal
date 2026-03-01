@@ -9,35 +9,13 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -52,19 +30,15 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.job_portal.R
 import com.example.job_portal.model.UserModel
 import com.example.job_portal.repository.UserRepoImpl
-import com.example.job_portal.ui.theme.Black
-import com.example.job_portal.ui.theme.CoffeeBrown
-import com.example.job_portal.ui.theme.CoffeeCream
-import com.example.job_portal.ui.theme.CoffeeLight
-import com.example.job_portal.ui.theme.SoftCream
+import com.example.job_portal.ui.theme.PrimaryIndigo
+import com.example.job_portal.ui.theme.BackgroundGray
 import com.example.job_portal.ui.theme.White
 import com.example.job_portal.viewmodel.UserViewModel
+// CRITICAL IMPORTS FOR COROUTINES
 import kotlinx.coroutines.launch
 
 class RegistrationActivity : ComponentActivity() {
@@ -86,6 +60,8 @@ fun RegistrationBody() {
 
     val context = LocalContext.current
     val activity = context as Activity
+
+    // State for Coroutines and Snackbars
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -93,79 +69,79 @@ fun RegistrationBody() {
     val viewModel = remember { UserViewModel(repo) }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        containerColor = BackgroundGray
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(SoftCream) // Updated background color
+                .background(BackgroundGray)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp, vertical = 30.dp),
+                .padding(horizontal = 24.dp, vertical = 30.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(40.dp))
+
             Text(
-                "Create Your Account",
+                "Create Account",
                 style = TextStyle(
-                    fontSize = 28.sp,
-                    color = CoffeeBrown, // Updated to CoffeeBrown
-                    fontWeight = FontWeight.Bold
+                    fontSize = 32.sp,
+                    color = PrimaryIndigo,
+                    fontWeight = FontWeight.ExtraBold
                 ),
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
             )
 
             Text(
-                "Join our job portal today and find your next opportunity.",
+                "Join PathVista Portal today and discover your next big career move.",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 15.dp),
+                    .padding(top = 8.dp, bottom = 32.dp),
                 style = TextStyle(
                     textAlign = TextAlign.Center,
-                    color = Black.copy(0.6f),
-                    fontSize = 16.sp
+                    color = Color.Gray,
+                    fontSize = 15.sp
                 )
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 CustomOutlinedTextField(
                     value = firstName,
                     onValueChange = { firstName = it },
-                    placeholder = "First Name",
+                    label = "First Name",
                     modifier = Modifier.weight(1f)
                 )
-                Spacer(modifier = Modifier.width(10.dp))
                 CustomOutlinedTextField(
                     value = lastName,
                     onValueChange = { lastName = it },
-                    placeholder = "Last Name",
+                    label = "Last Name",
                     modifier = Modifier.weight(1f)
                 )
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             CustomOutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                placeholder = "Email Address",
+                label = "Email Address",
                 keyboardType = KeyboardType.Email,
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             var visibility by remember { mutableStateOf(false) }
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                placeholder = { Text("Password (min 6 characters)") },
+                label = { Text("Password") },
+                placeholder = { Text("Min. 6 characters") },
                 visualTransformation = if (!visibility) PasswordVisualTransformation() else VisualTransformation.None,
                 trailingIcon = {
                     IconButton(onClick = { visibility = !visibility }) {
@@ -174,35 +150,39 @@ fun RegistrationBody() {
                                 painterResource(R.drawable.baseline_visibility_off_24)
                             else
                                 painterResource(R.drawable.baseline_visibility_24),
-                            contentDescription = if (visibility) "Hide password" else "Show password",
-                            tint = CoffeeBrown // Icon tint updated
+                            contentDescription = null,
+                            tint = PrimaryIndigo
                         )
                     }
                 },
-                colors = TextFieldDefaults.colors(
-                    unfocusedContainerColor = CoffeeCream, // Updated color
-                    focusedContainerColor = CoffeeCream,
-                    focusedIndicatorColor = CoffeeBrown, // Updated color
-                    unfocusedIndicatorColor = Color.Transparent
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = PrimaryIndigo,
+                    unfocusedBorderColor = Color.LightGray,
+                    focusedLabelColor = PrimaryIndigo,
+                    unfocusedContainerColor = White,
+                    focusedContainerColor = White
                 ),
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(15.dp)
+                shape = RoundedCornerShape(12.dp)
             )
 
-            Spacer(modifier = Modifier.height(30.dp))
+            Spacer(modifier = Modifier.height(40.dp))
 
             Button(
                 onClick = {
+                    // VALIDATION LOGIC
                     if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || password.length < 6) {
+                        // FIX: Launched inside coroutineScope
                         coroutineScope.launch {
                             snackbarHostState.showSnackbar(
-                                "Please fill all fields and use a password of at least 6 characters.",
-                                withDismissAction = true
+                                message = "Please fill all fields. Password must be 6+ chars.",
+                                duration = SnackbarDuration.Short
                             )
                         }
                         return@Button
                     }
 
+                    // FIREBASE REGISTRATION
                     viewModel.register(email, password) { success, message, userId ->
                         if (success) {
                             val newUser = UserModel(
@@ -215,48 +195,46 @@ fun RegistrationBody() {
                             viewModel.addUserToDatabase(userId, newUser) { dbSuccess, dbMessage ->
                                 if (dbSuccess) {
                                     Toast.makeText(context, "Registration successful!", Toast.LENGTH_LONG).show()
-                                    val intent = Intent(context, LoginActivity::class.java)
-                                    context.startActivity(intent)
+                                    context.startActivity(Intent(context, LoginActivity::class.java))
                                     activity.finish()
                                 } else {
                                     coroutineScope.launch {
-                                        snackbarHostState.showSnackbar("Database save failed: $dbMessage")
+                                        snackbarHostState.showSnackbar("Database error: $dbMessage")
                                     }
                                 }
                             }
                         } else {
                             coroutineScope.launch {
-                                snackbarHostState.showSnackbar(message ?: "Authentication failed")
+                                snackbarHostState.showSnackbar(message ?: "Registration failed")
                             }
                         }
                     }
                 },
-                shape = RoundedCornerShape(10.dp),
+                shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(55.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = CoffeeBrown) // Updated button color
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = PrimaryIndigo)
             ) {
-                Text("Sign Up", fontSize = 18.sp, color = White)
+                Text("Sign Up", fontSize = 16.sp, color = White, fontWeight = FontWeight.Bold)
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Text(buildAnnotatedString {
+            Text(
+                buildAnnotatedString {
                     append("Already have an account? ")
-                    withStyle(SpanStyle(color = CoffeeBrown, fontWeight = FontWeight.SemiBold)) {
+                    withStyle(SpanStyle(color = PrimaryIndigo, fontWeight = FontWeight.Bold)) {
                         append("Log In")
                     }
-                }, modifier = Modifier.clickable {
-                    val intent = Intent(context, LoginActivity::class.java)
-                    context.startActivity(intent)
+                },
+                modifier = Modifier.clickable {
+                    context.startActivity(Intent(context, LoginActivity::class.java))
                     activity.finish()
-                })
-            }
+                },
+                fontSize = 15.sp,
+                textAlign = TextAlign.Center
+            )
         }
     }
 }
@@ -265,7 +243,7 @@ fun RegistrationBody() {
 fun CustomOutlinedTextField(
     value: String,
     onValueChange: (String) -> Unit,
-    placeholder: String,
+    label: String,
     keyboardType: KeyboardType = KeyboardType.Text,
     modifier: Modifier
 ) {
@@ -273,20 +251,15 @@ fun CustomOutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-        placeholder = { Text(placeholder) },
-        colors = TextFieldDefaults.colors(
-            unfocusedContainerColor = CoffeeCream, // Updated to CoffeeCream
-            focusedContainerColor = CoffeeCream,
-            focusedIndicatorColor = CoffeeBrown, // Updated to CoffeeBrown
-            unfocusedIndicatorColor = Color.Transparent
+        label = { Text(label) },
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = PrimaryIndigo,
+            unfocusedBorderColor = Color.LightGray,
+            focusedLabelColor = PrimaryIndigo,
+            unfocusedContainerColor = White,
+            focusedContainerColor = White
         ),
-        modifier = modifier.height(55.dp),
-        shape = RoundedCornerShape(15.dp)
+        modifier = modifier,
+        shape = RoundedCornerShape(12.dp)
     )
-}
-
-@Preview
-@Composable
-fun RegistrationPreview() {
-    RegistrationBody()
 }

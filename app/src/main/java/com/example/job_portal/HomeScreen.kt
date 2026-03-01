@@ -19,8 +19,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.job_portal.model.JobModel
 import com.example.job_portal.model.UserModel
-import com.example.job_portal.ui.theme.CoffeeBrown
-import com.example.job_portal.ui.theme.SoftCream
+// UI Theme Imports - Updated to the modern Indigo palette
+import com.example.job_portal.ui.theme.PrimaryIndigo
+import com.example.job_portal.ui.theme.SecondaryBlue
+import com.example.job_portal.ui.theme.AccentAmber
+import com.example.job_portal.ui.theme.BackgroundGray
 import com.example.job_portal.ui.theme.White
 import com.example.job_portal.viewmodel.JobViewModel
 import com.example.job_portal.viewmodel.UserViewModel
@@ -29,7 +32,7 @@ import com.google.firebase.auth.FirebaseAuth
 @Composable
 fun HomeScreen(jobViewModel: JobViewModel, userViewModel: UserViewModel) {
     val jobsFromDb by jobViewModel.allJobs.observeAsState(initial = emptyList())
-    val userData by userViewModel.users.observeAsState() // Observe user profile
+    val userData by userViewModel.users.observeAsState()
     val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
     LaunchedEffect(Unit) {
@@ -37,27 +40,27 @@ fun HomeScreen(jobViewModel: JobViewModel, userViewModel: UserViewModel) {
         jobViewModel.fetchUserApplications()
         if (userId.isNotEmpty()) {
             jobViewModel.fetchSavedJobs(userId)
-            userViewModel.getUserById(userId) // Fetch profile data for auto-fill
+            userViewModel.getUserById(userId)
         }
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(SoftCream)
+            .background(BackgroundGray) // Updated background
             .padding(16.dp)
     ) {
         Text(
             text = "Popular Opportunities",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = CoffeeBrown,
+            color = PrimaryIndigo, // Updated text color
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
         if (jobsFromDb.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = CoffeeBrown)
+                CircularProgressIndicator(color = PrimaryIndigo)
             }
         } else {
             LazyColumn(
@@ -88,17 +91,15 @@ fun JobItemCard(
 
     var showDialog by remember { mutableStateOf(false) }
 
-    // Auto-fill states based on user profile
     var userEmail by remember(userData) { mutableStateOf(userData?.email ?: "") }
     var cvDescription by remember { mutableStateOf("") }
 
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
-            title = { Text("Apply for ${job.title}", fontWeight = FontWeight.Bold, color = CoffeeBrown) },
+            title = { Text("Apply for ${job.title}", fontWeight = FontWeight.Bold, color = PrimaryIndigo) },
             text = {
                 Column {
-                    // Display User Identity
                     Text(
                         text = "Applying as: ${userData?.firstName ?: ""} ${userData?.lastName ?: ""}".trim().ifEmpty { userEmail },
                         fontSize = 14.sp,
@@ -113,7 +114,11 @@ fun JobItemCard(
                         onValueChange = { userEmail = it },
                         label = { Text("Email Address") },
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(8.dp)
+                        shape = RoundedCornerShape(8.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = PrimaryIndigo,
+                            focusedLabelColor = PrimaryIndigo
+                        )
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -125,7 +130,11 @@ fun JobItemCard(
                         placeholder = { Text("Tell the recruiter about your experience...") },
                         modifier = Modifier.fillMaxWidth(),
                         minLines = 4,
-                        shape = RoundedCornerShape(8.dp)
+                        shape = RoundedCornerShape(8.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = PrimaryIndigo,
+                            focusedLabelColor = PrimaryIndigo
+                        )
                     )
                 }
             },
@@ -141,14 +150,18 @@ fun JobItemCard(
                             Toast.makeText(context, "Please complete the form", Toast.LENGTH_SHORT).show()
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = CoffeeBrown)
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryIndigo)
                 ) {
-                    Text("Submit Application")
+                    Text("Submit Application", color = White)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDialog = false }) { Text("Cancel") }
-            }
+                TextButton(onClick = { showDialog = false }) {
+                    Text("Cancel", color = Color.Gray)
+                }
+            },
+            containerColor = White,
+            shape = RoundedCornerShape(16.dp)
         )
     }
 
@@ -165,8 +178,8 @@ fun JobItemCard(
                 verticalAlignment = Alignment.Top
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(text = job.title, fontWeight = FontWeight.ExtraBold, fontSize = 20.sp, color = CoffeeBrown)
-                    Text(text = job.company, color = Color.Gray, fontSize = 15.sp)
+                    Text(text = job.title, fontWeight = FontWeight.ExtraBold, fontSize = 20.sp, color = PrimaryIndigo)
+                    Text(text = job.company, color = SecondaryBlue, fontSize = 15.sp)
                 }
 
                 IconButton(
@@ -182,7 +195,7 @@ fun JobItemCard(
                         ),
                         contentDescription = "Save Job",
                         modifier = Modifier.size(20.dp),
-                        tint = if (isSaved) CoffeeBrown else Color.LightGray
+                        tint = if (isSaved) AccentAmber else Color.LightGray
                     )
                 }
             }
@@ -195,13 +208,12 @@ fun JobItemCard(
             HomeJobDetailRow(label = "Salary", value = job.salary)
             HomeJobDetailRow(label = "Job Type", value = job.type)
 
-            // Requirements Section
             if (job.requirements.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = "Requirements:",
                     fontWeight = FontWeight.Bold,
-                    color = CoffeeBrown,
+                    color = PrimaryIndigo,
                     fontSize = 14.sp
                 )
                 Text(
@@ -219,14 +231,14 @@ fun JobItemCard(
                 modifier = Modifier.fillMaxWidth().height(48.dp),
                 enabled = !hasApplied,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (hasApplied) Color.Gray else CoffeeBrown,
+                    containerColor = PrimaryIndigo,
                     disabledContainerColor = Color.LightGray
                 ),
                 shape = RoundedCornerShape(10.dp)
             ) {
                 Text(
                     text = if (hasApplied) "Applied" else "Apply Now",
-                    color = if (hasApplied) Color.DarkGray else White,
+                    color = White,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -237,7 +249,7 @@ fun JobItemCard(
 @Composable
 fun HomeJobDetailRow(label: String, value: String) {
     Row(modifier = Modifier.padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text(text = "$label: ", fontWeight = FontWeight.Bold, color = CoffeeBrown, fontSize = 14.sp)
+        Text(text = "$label: ", fontWeight = FontWeight.Bold, color = PrimaryIndigo, fontSize = 14.sp)
         Text(text = value, color = Color.DarkGray, fontSize = 14.sp)
     }
 }
