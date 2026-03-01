@@ -16,8 +16,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.job_portal.model.UserModel
-import com.example.job_portal.ui.theme.CoffeeBrown
-import com.example.job_portal.ui.theme.SoftCream
+// UI Theme Imports - Updated to the modern palette
+import com.example.job_portal.ui.theme.PrimaryIndigo
+import com.example.job_portal.ui.theme.BackgroundGray
 import com.example.job_portal.ui.theme.White
 import com.example.job_portal.viewmodel.UserViewModel
 
@@ -37,8 +38,7 @@ fun ProfileScreen(userViewModel: UserViewModel) {
         }
     }
 
-    // Local states for editing, initialized with data from DB
-    // remember(userData) ensures that when the database data loads, the text fields update
+    // Local states for editing
     var firstName by remember(userData) { mutableStateOf(userData?.firstName ?: "") }
     var lastName by remember(userData) { mutableStateOf(userData?.lastName ?: "") }
     var phone by remember(userData) { mutableStateOf(userData?.phoneNumber ?: "") }
@@ -47,31 +47,37 @@ fun ProfileScreen(userViewModel: UserViewModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(SoftCream)
-            .padding(20.dp)
+            .background(BackgroundGray) // Updated from SoftCream
+            .padding(horizontal = 24.dp)
             .verticalScroll(rememberScrollState())
     ) {
+        Spacer(modifier = Modifier.height(24.dp))
+
         Text(
             text = "My Profile",
-            fontSize = 26.sp,
-            fontWeight = FontWeight.Bold,
-            color = CoffeeBrown
+            fontSize = 28.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = PrimaryIndigo // Updated from CoffeeBrown
         )
+
         Text(
             text = "Email: ${currentUser?.email ?: "Not logged in"}",
             fontSize = 14.sp,
-            color = Color.Gray
+            color = Color.Gray,
+            modifier = Modifier.padding(top = 4.dp)
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
+        // Profile Input Fields
         ProfileTextField(label = "First Name", value = firstName, onValueChange = { firstName = it })
         ProfileTextField(label = "Last Name", value = lastName, onValueChange = { lastName = it })
         ProfileTextField(label = "Phone Number", value = phone, onValueChange = { phone = it })
         ProfileTextField(label = "Location", value = location, onValueChange = { location = it })
 
-        Spacer(modifier = Modifier.height(30.dp))
+        Spacer(modifier = Modifier.height(40.dp))
 
+        // Update Button
         Button(
             onClick = {
                 if (userId.isNotEmpty()) {
@@ -82,7 +88,6 @@ fun ProfileScreen(userViewModel: UserViewModel) {
                         lastName = lastName,
                         phoneNumber = phone,
                         location = location,
-                        // Retaining old data for fields not in this form
                         dob = userData?.dob ?: "",
                         gender = userData?.gender ?: ""
                     )
@@ -93,9 +98,10 @@ fun ProfileScreen(userViewModel: UserViewModel) {
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(55.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = CoffeeBrown),
-            shape = RoundedCornerShape(12.dp)
+                .height(56.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = PrimaryIndigo), // Updated
+            shape = RoundedCornerShape(12.dp),
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
         ) {
             Text(
                 text = "Update Profile",
@@ -105,19 +111,19 @@ fun ProfileScreen(userViewModel: UserViewModel) {
             )
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(32.dp))
     }
 }
 
 @Composable
 fun ProfileTextField(label: String, value: String, onValueChange: (String) -> Unit) {
-    Column(modifier = Modifier.padding(vertical = 8.dp)) {
+    Column(modifier = Modifier.padding(vertical = 10.dp)) {
         Text(
             text = label,
             fontWeight = FontWeight.Bold,
-            color = CoffeeBrown,
+            color = PrimaryIndigo, // Updated from CoffeeBrown
             fontSize = 14.sp,
-            modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)
+            modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
         )
         OutlinedTextField(
             value = value,
@@ -128,9 +134,10 @@ fun ProfileTextField(label: String, value: String, onValueChange: (String) -> Un
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = White,
                 unfocusedContainerColor = White,
-                focusedBorderColor = CoffeeBrown,
-                unfocusedBorderColor = Color.LightGray,
-                cursorColor = CoffeeBrown
+                focusedBorderColor = PrimaryIndigo,
+                unfocusedBorderColor = Color.LightGray.copy(alpha = 0.5f),
+                cursorColor = PrimaryIndigo,
+                focusedLabelColor = PrimaryIndigo
             )
         )
     }
