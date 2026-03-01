@@ -18,8 +18,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.job_portal.model.JobModel
 import com.example.job_portal.repository.JobRepoImpl
-import com.example.job_portal.ui.theme.CoffeeBrown
-import com.example.job_portal.ui.theme.SoftCream
+// UI Theme Imports - Updated to the modern palette
+import com.example.job_portal.ui.theme.PrimaryIndigo
+import com.example.job_portal.ui.theme.BackgroundGray
 import com.example.job_portal.ui.theme.White
 import com.example.job_portal.viewmodel.JobViewModel
 
@@ -41,15 +42,27 @@ fun AddJobBody() {
     var location by remember { mutableStateOf("") }
     var salary by remember { mutableStateOf("") }
     var type by remember { mutableStateOf("") }
-    // --- NEW FIELD ---
     var requirements by remember { mutableStateOf("") }
 
     val context = LocalContext.current
 
     Scaffold(
         topBar = {
-            Box(modifier = Modifier.fillMaxWidth().background(CoffeeBrown).padding(16.dp)) {
-                Text("Post New Job", color = White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            // Updated Top Bar with Indigo styling
+            Surface(shadowElevation = 4.dp) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(PrimaryIndigo)
+                        .padding(horizontal = 20.dp, vertical = 18.dp)
+                ) {
+                    Text(
+                        text = "Post New Job",
+                        color = White,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                }
             }
         }
     ) { padding ->
@@ -57,25 +70,34 @@ fun AddJobBody() {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(SoftCream)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(15.dp)
+                .background(BackgroundGray) // Updated from SoftCream
+                .padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(top = 24.dp, bottom = 24.dp)
         ) {
             item {
                 CustomTextField(value = title, label = "Job Title") { title = it }
-                CustomTextField(value = company, label = "Company Name") { company = it }
-                CustomTextField(value = location, label = "Location (City or Remote)") { location = it }
-                CustomTextField(value = salary, label = "Salary (e.g. $50k - $70k)") { salary = it }
-                CustomTextField(value = type, label = "Job Type (Full-time/Part-time)") { type = it }
+                Spacer(modifier = Modifier.height(4.dp))
 
+                CustomTextField(value = company, label = "Company Name") { company = it }
+                Spacer(modifier = Modifier.height(4.dp))
+
+                CustomTextField(value = location, label = "Location (City or Remote)") { location = it }
+                Spacer(modifier = Modifier.height(4.dp))
+
+                CustomTextField(value = salary, label = "Salary Range") { salary = it }
+                Spacer(modifier = Modifier.height(4.dp))
+
+                CustomTextField(value = type, label = "Job Type (Full-time/Part-time)") { type = it }
+                Spacer(modifier = Modifier.height(4.dp))
 
                 CustomTextField(
                     value = requirements,
-                    label = "Job Requirements (Skills, Experience, etc.)",
+                    label = "Requirements & Description",
                     isSingleLine = false
                 ) { requirements = it }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
                 Button(
                     onClick = {
@@ -83,7 +105,6 @@ fun AddJobBody() {
                             Toast.makeText(context, "Please fill all required fields", Toast.LENGTH_SHORT).show()
                             return@Button
                         }
-
 
                         val model = JobModel(
                             jobId = "",
@@ -102,11 +123,11 @@ fun AddJobBody() {
                             }
                         }
                     },
-                    modifier = Modifier.fillMaxWidth().height(55.dp),
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = CoffeeBrown)
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryIndigo) // Updated
                 ) {
-                    Text("Post Job", color = White, fontSize = 16.sp)
+                    Text("Post Job", color = White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -127,9 +148,11 @@ fun CustomTextField(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         singleLine = isSingleLine,
-        minLines = if (isSingleLine) 1 else 3,
+        minLines = if (isSingleLine) 1 else 4,
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = CoffeeBrown,
+            focusedBorderColor = PrimaryIndigo,
+            unfocusedBorderColor = Color.LightGray,
+            focusedLabelColor = PrimaryIndigo,
             unfocusedContainerColor = White,
             focusedContainerColor = White
         )
