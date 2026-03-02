@@ -12,10 +12,11 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag // Required for identification in tests
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-// UI Theme Imports - Updated to the modern palette
+// UI Theme Imports
 import com.example.job_portal.ui.theme.PrimaryIndigo
 import com.example.job_portal.ui.theme.BackgroundGray
 import com.example.job_portal.ui.theme.White
@@ -46,7 +47,7 @@ fun SearchScreen(jobViewModel: JobViewModel, userViewModel: UserViewModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundGray) // Updated from SoftCream
+            .background(BackgroundGray)
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         // Search Header
@@ -58,13 +59,14 @@ fun SearchScreen(jobViewModel: JobViewModel, userViewModel: UserViewModel) {
             modifier = Modifier.padding(bottom = 16.dp, start = 4.dp)
         )
 
-        // Updated Search Bar with Indigo styling
+        // UPDATED: Added testTag to the Search Bar
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 8.dp),
+                .padding(bottom = 8.dp)
+                .testTag("search_field"), // Tag for identification in UI tests
             placeholder = { Text("Search by title or company...") },
             leadingIcon = {
                 Icon(
@@ -79,7 +81,7 @@ fun SearchScreen(jobViewModel: JobViewModel, userViewModel: UserViewModel) {
                 focusedContainerColor = White,
                 unfocusedContainerColor = White,
                 focusedBorderColor = PrimaryIndigo,
-                unfocusedBorderColor = Color.Transparent, // Makes it look like a clean card
+                unfocusedBorderColor = Color.Transparent,
                 cursorColor = PrimaryIndigo,
                 focusedLabelColor = PrimaryIndigo
             )
@@ -93,7 +95,12 @@ fun SearchScreen(jobViewModel: JobViewModel, userViewModel: UserViewModel) {
         }
 
         if (filteredJobs.isEmpty() && searchQuery.isNotEmpty()) {
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("no_jobs_found_box"), // Tag for checking empty states
+                contentAlignment = androidx.compose.ui.Alignment.Center
+            ) {
                 Text(
                     text = "No jobs found for '$searchQuery'",
                     color = Color.Gray,
@@ -103,8 +110,11 @@ fun SearchScreen(jobViewModel: JobViewModel, userViewModel: UserViewModel) {
             }
         }
 
+        // UPDATED: Added testTag to the list
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .testTag("filtered_job_list"), // Tag to verify the list exists
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(top = 8.dp, bottom = 32.dp)
         ) {

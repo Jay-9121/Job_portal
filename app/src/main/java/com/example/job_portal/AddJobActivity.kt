@@ -1,6 +1,6 @@
 package com.example.job_portal
 
-import android.os.Bundle
+import android.os.Bundle // FIXED: Added missing import
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -13,12 +13,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag // Required for identification in Large Tests
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.job_portal.model.JobModel
 import com.example.job_portal.repository.JobRepoImpl
-// UI Theme Imports - Updated to the modern palette
 import com.example.job_portal.ui.theme.PrimaryIndigo
 import com.example.job_portal.ui.theme.BackgroundGray
 import com.example.job_portal.ui.theme.White
@@ -48,7 +48,6 @@ fun AddJobBody() {
 
     Scaffold(
         topBar = {
-            // Updated Top Bar with Indigo styling
             Surface(shadowElevation = 4.dp) {
                 Box(
                     modifier = Modifier
@@ -70,31 +69,23 @@ fun AddJobBody() {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(BackgroundGray) // Updated from SoftCream
+                .background(BackgroundGray)
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(top = 24.dp, bottom = 24.dp)
         ) {
             item {
-                CustomTextField(value = title, label = "Job Title") { title = it }
-                Spacer(modifier = Modifier.height(4.dp))
-
-                CustomTextField(value = company, label = "Company Name") { company = it }
-                Spacer(modifier = Modifier.height(4.dp))
-
-                CustomTextField(value = location, label = "Location (City or Remote)") { location = it }
-                Spacer(modifier = Modifier.height(4.dp))
-
-                CustomTextField(value = salary, label = "Salary Range") { salary = it }
-                Spacer(modifier = Modifier.height(4.dp))
-
-                CustomTextField(value = type, label = "Job Type (Full-time/Part-time)") { type = it }
-                Spacer(modifier = Modifier.height(4.dp))
-
+                // Input fields with testTags for instrumented testing
+                CustomTextField(value = title, label = "Job Title", tag = "title_input") { title = it }
+                CustomTextField(value = company, label = "Company Name", tag = "company_input") { company = it }
+                CustomTextField(value = location, label = "Location", tag = "location_input") { location = it }
+                CustomTextField(value = salary, label = "Salary Range", tag = "salary_input") { salary = it }
+                CustomTextField(value = type, label = "Job Type", tag = "type_input") { type = it }
                 CustomTextField(
                     value = requirements,
-                    label = "Requirements & Description",
-                    isSingleLine = false
+                    label = "Requirements",
+                    isSingleLine = false,
+                    tag = "requirements_input"
                 ) { requirements = it }
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -123,9 +114,12 @@ fun AddJobBody() {
                             }
                         }
                     },
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .testTag("post_job_button"), // Tag used for Large/End-to-End tests
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryIndigo) // Updated
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryIndigo)
                 ) {
                     Text("Post Job", color = White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 }
@@ -138,6 +132,7 @@ fun AddJobBody() {
 fun CustomTextField(
     value: String,
     label: String,
+    tag: String,
     isSingleLine: Boolean = true,
     onValueChange: (String) -> Unit
 ) {
@@ -145,7 +140,9 @@ fun CustomTextField(
         value = value,
         onValueChange = onValueChange,
         label = { Text(label) },
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag(tag), // Assigning the testing tag
         shape = RoundedCornerShape(12.dp),
         singleLine = isSingleLine,
         minLines = if (isSingleLine) 1 else 4,

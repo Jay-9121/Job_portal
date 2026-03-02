@@ -13,13 +13,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag // Added for Large/E2E Testing
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.job_portal.model.JobModel
 import com.example.job_portal.model.UserModel
-// UI Theme Imports - Updated to the modern Indigo palette
 import com.example.job_portal.ui.theme.PrimaryIndigo
 import com.example.job_portal.ui.theme.SecondaryBlue
 import com.example.job_portal.ui.theme.AccentAmber
@@ -47,14 +47,14 @@ fun HomeScreen(jobViewModel: JobViewModel, userViewModel: UserViewModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundGray) // Updated background
+            .background(BackgroundGray)
             .padding(16.dp)
     ) {
         Text(
             text = "Popular Opportunities",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = PrimaryIndigo, // Updated text color
+            color = PrimaryIndigo,
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
@@ -64,7 +64,7 @@ fun HomeScreen(jobViewModel: JobViewModel, userViewModel: UserViewModel) {
             }
         } else {
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize().testTag("job_list"), // Added tag for the list
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 contentPadding = PaddingValues(bottom = 16.dp)
             ) {
@@ -96,6 +96,7 @@ fun JobItemCard(
 
     if (showDialog) {
         AlertDialog(
+            modifier = Modifier.testTag("apply_dialog"), // Added tag for the dialog
             onDismissRequest = { showDialog = false },
             title = { Text("Apply for ${job.title}", fontWeight = FontWeight.Bold, color = PrimaryIndigo) },
             text = {
@@ -113,7 +114,7 @@ fun JobItemCard(
                         value = userEmail,
                         onValueChange = { userEmail = it },
                         label = { Text("Email Address") },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().testTag("apply_email_field"), // Added tag
                         shape = RoundedCornerShape(8.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = PrimaryIndigo,
@@ -128,7 +129,7 @@ fun JobItemCard(
                         onValueChange = { cvDescription = it },
                         label = { Text("CV Summary / Why you?") },
                         placeholder = { Text("Tell the recruiter about your experience...") },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().testTag("apply_summary_field"), // Added tag
                         minLines = 4,
                         shape = RoundedCornerShape(8.dp),
                         colors = OutlinedTextFieldDefaults.colors(
@@ -150,6 +151,7 @@ fun JobItemCard(
                             Toast.makeText(context, "Please complete the form", Toast.LENGTH_SHORT).show()
                         }
                     },
+                    modifier = Modifier.testTag("submit_application_button"), // Added tag
                     colors = ButtonDefaults.buttonColors(containerColor = PrimaryIndigo)
                 ) {
                     Text("Submit Application", color = White)
@@ -166,7 +168,7 @@ fun JobItemCard(
     }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().testTag("job_card_${job.jobId}"), // Dynamic tag per job
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = White),
         elevation = CardDefaults.cardElevation(4.dp)
@@ -187,7 +189,7 @@ fun JobItemCard(
                         if (userId.isNotEmpty()) viewModel.toggleSaveJob(userId, job)
                         else Toast.makeText(context, "Please log in", Toast.LENGTH_SHORT).show()
                     },
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(32.dp).testTag("save_button_${job.jobId}") // Added tag
                 ) {
                     Icon(
                         painter = painterResource(
@@ -228,7 +230,7 @@ fun JobItemCard(
 
             Button(
                 onClick = { if (!hasApplied) showDialog = true },
-                modifier = Modifier.fillMaxWidth().height(48.dp),
+                modifier = Modifier.fillMaxWidth().height(48.dp).testTag("apply_now_button"), // Added tag
                 enabled = !hasApplied,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = PrimaryIndigo,

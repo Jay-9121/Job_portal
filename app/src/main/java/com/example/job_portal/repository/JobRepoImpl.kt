@@ -34,7 +34,7 @@ class JobRepoImpl : JobRepo {
     }
 
     override fun updateJob(model: JobModel, callback: (Boolean, String) -> Unit) {
-        jobsRef.child(model.jobId).updateChildren(model.toMap()).addOnCompleteListener {
+        jobsRef.child(model.jobId).setValue(model).addOnCompleteListener {
             callback(it.isSuccessful, if (it.isSuccessful) "Updated" else "Failed")
         }
     }
@@ -45,13 +45,17 @@ class JobRepoImpl : JobRepo {
         }
     }
 
-    // --- SAVED JOBS ---
+    // --- SAVED JOBS PERSISTENCE ---
     override fun saveJobToDb(userId: String, jobId: String, callback: (Boolean) -> Unit) {
-        savedJobsRef.child(userId).child(jobId).setValue(true).addOnCompleteListener { callback(it.isSuccessful) }
+        savedJobsRef.child(userId).child(jobId).setValue(true).addOnCompleteListener {
+            callback(it.isSuccessful)
+        }
     }
 
     override fun unsaveJobFromDb(userId: String, jobId: String, callback: (Boolean) -> Unit) {
-        savedJobsRef.child(userId).child(jobId).removeValue().addOnCompleteListener { callback(it.isSuccessful) }
+        savedJobsRef.child(userId).child(jobId).removeValue().addOnCompleteListener {
+            callback(it.isSuccessful)
+        }
     }
 
     override fun getSavedJobIds(userId: String, callback: (List<String>) -> Unit) {
@@ -62,62 +66,52 @@ class JobRepoImpl : JobRepo {
     }
 
     // --- APPLICATION LOGIC ---
-
-    // 1. Submit Application
     override fun submitApplication(application: ApplicationModel, callback: (Boolean) -> Unit) {
         val id = appRef.push().key ?: ""
-        // Ensure the ID is saved INSIDE the object fields too
         val appWithId = application.copy(applicationId = id)
         appRef.child(id).setValue(appWithId).addOnCompleteListener {
             callback(it.isSuccessful)
         }
     }
 
-    // 2. Fetch User History (Fixed ID Mapping)
     override fun getUserApplications(userEmail: String, callback: (List<ApplicationModel>) -> Unit) {
         appRef.orderByChild("userEmail").equalTo(userEmail)
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val apps = snapshot.children.mapNotNull { child ->
-                        val app = child.getValue(ApplicationModel::class.java)
-                        // FORCE the model's applicationId to be the Firebase key
-                        app?.copy(applicationId = child.key ?: "")
+                        child.getValue(ApplicationModel::class.java)?.copy(applicationId = child.key ?: "")
                     }
                     callback(apps)
                 }
-                override fun onCancelled(error: DatabaseError) { callback(emptyList()) }
+                override fun onCancelled(error: DatabaseError) {
+                    callback(emptyList())
+                }
             })
     }
 
-    // 3. Fetch All for Admin (Fixed ID Mapping)
     override fun getAllApplications(callback: (List<ApplicationModel>) -> Unit) {
         appRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val apps = snapshot.children.mapNotNull { child ->
                     val app = child.getValue(ApplicationModel::class.java)
-                    // This is the most important line in the whole app:
                     app?.apply { applicationId = child.key ?: "" }
                 }
                 callback(apps)
             }
-            override fun onCancelled(error: DatabaseError) { callback(emptyList()) }
+            override fun onCancelled(error: DatabaseError) {
+                callback(emptyList())
+            }
         })
     }
 
-    // 4. Update Status (The function that powers the Accept/Decline buttons)
     override fun updateApplicationStatus(applicationId: String, newStatus: String, callback: (Boolean) -> Unit) {
         if (applicationId.isEmpty()) {
-            Log.e("FirebaseError", "Application ID is empty. Cannot update status.")
+            Log.e("FirebaseError", "Application ID is empty.")
             callback(false)
             return
         }
-
-        // Updates the "status" field inside the specific application node
         appRef.child(applicationId).child("status").setValue(newStatus)
             .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    Log.d("FirebaseSuccess", "Application $applicationId set to $newStatus")
-                }
                 callback(task.isSuccessful)
             }
     }
